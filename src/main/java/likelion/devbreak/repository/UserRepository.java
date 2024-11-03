@@ -1,4 +1,7 @@
 package likelion.devbreak.repository;
 
-public class UserRepository {
+import likelion.devbreak.domain.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface UserRepository extends JpaRepository<User, Long> {
 }
