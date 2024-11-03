@@ -1,9 +1,10 @@
 package likelion.devbreak.controller;
 
-import likelion.devbreak.domain.Article;
+import likelion.devbreak.dto.ArticleRequest;
+import likelion.devbreak.dto.ArticleResponse;
 import likelion.devbreak.service.ArticleService;
-import likelion.devbreak.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -13,79 +14,53 @@ public class ArticleController {
     @Autowired
     private ArticleService articleService;
 
-    @Autowired
-    private JwtUtil jwtUtil;
-
     // 글 생성
     @PostMapping
-    public Article createArticle(@RequestBody Article article, @RequestHeader("Authorization") String token) {
-        String jwtToken = token.replace("Bearer ", "");
+    public ResponseEntity<ArticleResponse> createArticle(
+            @RequestParam Long userId,  // userId를 직접 전달
+            @RequestBody ArticleRequest articleRequest) {
 
-        if (!jwtUtil.validateToken(jwtToken)) {
-            throw new IllegalArgumentException("Invalid JWT token");
-        }
-
-        Long userId = jwtUtil.extractUserId(jwtToken);
-        return articleService.createArticle(userId, article);
+        ArticleResponse createdArticle = articleService.createArticle(userId, articleRequest);
+        return ResponseEntity.ok(createdArticle);
     }
 
     // 글 수정
     @PutMapping("/{articleId}")
-    public Article updateArticle(@PathVariable Long articleId,
-                                 @RequestBody Article updatedArticle,
-                                 @RequestHeader("Authorization") String token) {
-        String jwtToken = token.replace("Bearer ", "");
+    public ResponseEntity<ArticleResponse> updateArticle(
+            @PathVariable Long articleId,
+            @RequestParam Long userId,  // userId를 직접 전달
+            @RequestBody ArticleRequest articleRequest) {
 
-        if (!jwtUtil.validateToken(jwtToken)) {
-            throw new IllegalArgumentException("Invalid JWT token");
-        }
-
-        Long userId = jwtUtil.extractUserId(jwtToken);
-        return articleService.updateArticle(articleId, userId, updatedArticle);
+        ArticleResponse updatedArticle = articleService.updateArticle(articleId, userId, articleRequest);
+        return ResponseEntity.ok(updatedArticle);
     }
 
     // 글 삭제
     @DeleteMapping("/{articleId}")
-    public String deleteArticle(@PathVariable Long articleId,
-                                @RequestHeader("Authorization") String token) {
-        String jwtToken = token.replace("Bearer ", "");
+    public ResponseEntity<String> deleteArticle(
+            @PathVariable Long articleId,
+            @RequestParam Long userId) {  // userId를 직접 전달
 
-        if (!jwtUtil.validateToken(jwtToken)) {
-            throw new IllegalArgumentException("Invalid JWT token");
-        }
-
-        Long userId = jwtUtil.extractUserId(jwtToken);
         articleService.deleteArticle(articleId, userId);
-        return "Article deleted successfully";
+        return ResponseEntity.ok("Article deleted successfully");
     }
-    // 글조회
+
+    // 특정 글 조회
     @GetMapping("/{articleId}")
-    public Article getArticle(@PathVariable Long articleId,
-                              @RequestHeader("Authorization") String token) {
-        String jwtToken = token.replace("Bearer ", "");
+    public ResponseEntity<ArticleResponse> getArticle(
+            @PathVariable Long articleId) {
 
-        if (!jwtUtil.validateToken(jwtToken)) {
-            throw new IllegalArgumentException("Invalid JWT token");
-        }
-
-        // JWT 토큰에서 유저 인증 후 특정 글 조회
-        jwtUtil.extractUserId(jwtToken); // userId 추출, 조회에 필요한 경우 사용 가능
-        return articleService.getArticleById(articleId);
+        ArticleResponse article = articleService.getArticleById(articleId);
+        return ResponseEntity.ok(article);
     }
-    // 좋아요/좋아요 취소
+
+    // 좋아요 및 좋아요 취소
     @PutMapping("/{articleId}/like")
-    public Article toggleLike(@PathVariable Long articleId,
-                              @RequestHeader("Authorization") String token) {
-        String jwtToken = token.replace("Bearer ", "");
+    public ResponseEntity<ArticleResponse> toggleLike(
+            @PathVariable Long articleId,
+            @RequestParam Long userId) {  // userId를 직접 전달
 
-        if (!jwtUtil.validateToken(jwtToken)) {
-            throw new IllegalArgumentException("Invalid JWT token");
-        }
-
-        Long userId = jwtUtil.extractUserId(jwtToken);
-        return articleService.toggleLike(articleId, userId);
+        ArticleResponse article = articleService.toggleLike(articleId, userId);
+        return ResponseEntity.ok(article);
     }
-
-
-
 }

@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 public class Article {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long articleId;
+    private Long id;  // 여기서 필드명을 articleId에서 id로 변경
 
     private String title;
     private String content;
