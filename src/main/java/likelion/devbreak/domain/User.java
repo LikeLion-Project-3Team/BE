@@ -1,27 +1,24 @@
 package likelion.devbreak.domain;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.springframework.data.annotation.Id;
+import lombok.*;
+import org.hibernate.annotations.DynamicInsert;
+
 
 import java.util.Set;
 
-@Entity
-@Getter
-@Setter
-@NoArgsConstructor
+@Entity @Getter @Setter
+@DynamicInsert @ToString
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String email;
-    private String nickname;
-
+    private String username;
     private String provider = "GITHUB";
 
+    /*
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     public Set<Blog> blogs;
 
@@ -36,11 +33,10 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     public Set<Likes> likes;
-
-    public User(Long id, String email, String nickname, String provider){
-        this.id = id;
-        this.email = email;
-        this.nickname = nickname;
+    */
+    @Builder
+    public User(Integer githubId, String username, String provider, String accessToken){
+        this.username = username;
         this.provider = provider;
     }
 }
