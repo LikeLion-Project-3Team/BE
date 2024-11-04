@@ -1,0 +1,45 @@
+spring:
+  application:
+    name: Devbreak
+
+  datasource:
+    url: jdbc:mysql://db.klr.kr:3306/project_3team
+    username: project_3team
+    password: 3team
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      max-lifetime: 400000
+      idle-timeout: 600000  # 10분
+      connection-timeout: 30000 # 30초
+      maximum-pool-size: 5
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+  jwt:
+    secret-key: kdfdkf4dsf54agkra32eakfk1djgkrmek32dfdstdfaerrfdsfdfagarghaehtertaew65525e6f2as266ae5r6efa5ef4ef1a26eesf
+
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.hibernate.type: trace
+    org.springframework.jdbc: debug
+
+springdoc:
+  swagger-ui:
+    path: "/swagger-ui/index.html"
+    operations-sorter: "alpha"
+    tags-sorter: "alpha"
+    disable-swagger-default-url: true
+    # doc-expansion: "none"
+  default-consumes-media-type: "application/json"
+  default-produces-media-type: "application/json"
+
+github:
+  client-id: Ov23lisFtOBCqCEZa9tE
+  client-secret: a45f08178f9747da10aa37e8781ae3bdcc4741c4
+  user-info-url: https://api.github.com/user
+  api-url: https://github.com/login/oauth/access_token
+  redirect-uri: http://localhost:8080/githubLogin
+  read: user
+
