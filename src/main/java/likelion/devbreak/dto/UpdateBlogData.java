@@ -15,7 +15,7 @@ public class UpdateBlogData {
     private String description;
     private String gitRepoUrl;
 
-    private List<User> contributors;
+    private User user;
     private List<Article> articles;
     private int favCount;
     private boolean favButton;
@@ -25,7 +25,7 @@ public class UpdateBlogData {
                 .blogName(request.getBlogName())
                 .description(request.getDescription())
                 .gitRepoUrl(request.getGitRepoUrl())
-                .contributors(request.getContributors())
+                .user(request.getUser())
                 .articles(request.getArticles())
                 .build();
     }

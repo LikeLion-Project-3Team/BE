@@ -2,41 +2,38 @@ package likelion.devbreak.domain.dto.response;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import likelion.devbreak.domain.Article;
 import likelion.devbreak.domain.Blog;
 import likelion.devbreak.domain.User;
 import likelion.devbreak.dto.ResponseDto;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
 @Builder
 @JsonNaming(value = PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class AddBlogResponse implements ResponseDto {
-    private Long blogId;
-    private Long userId;
+public class GetBlogResponse implements ResponseDto {
+    private Long id;
     private String blogName;
+    private User user;
+    private List<Article> articles;
     private String description;
     private String gitRepoUrl;
-    private List<User> contributors;
     private int favCount;
-    private boolean favButton;
-    private LocalDateTime updatedAt;
+    private Boolean favButton;
 
-    public static AddBlogResponse createWith(Blog blog) {
-        return AddBlogResponse.builder()
-                .blogId(blog.getId())
-                .userId(blog.getId())
+    public static GetBlogResponse createWith(Blog blog){
+        return GetBlogResponse.builder()
+                .id(blog.getId())
                 .blogName(blog.getBlogName())
+                .user(blog.getUser())
+                .articles(blog.getArticles())
                 .description(blog.getDescription())
                 .gitRepoUrl(blog.getGitRepoUrl())
-                .contributors(blog.getContributors())
                 .favCount(blog.getFavCount())
                 .favButton(blog.isFavButton())
-                .updatedAt(blog.getUpdatedAt())
                 .build();
     }
-
 }
