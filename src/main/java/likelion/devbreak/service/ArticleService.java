@@ -1,48 +1,65 @@
 package likelion.devbreak.service;
 
 import likelion.devbreak.domain.Article;
+import likelion.devbreak.domain.Blog;
 import likelion.devbreak.domain.User;
 import likelion.devbreak.domain.Likes;
-import likelion.devbreak.dto.ArticleRequest;
-import likelion.devbreak.dto.ArticleResponse;
+import likelion.devbreak.domain.dto.request.ArticleRequest;
+import likelion.devbreak.domain.dto.response.ArticleResponse;
+import likelion.devbreak.oAuth.domain.CustomUserDetails;
 import likelion.devbreak.repository.ArticleRepository;
+import likelion.devbreak.repository.BlogRepository;
 import likelion.devbreak.repository.UserRepository;
 import likelion.devbreak.repository.LikesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.webjars.NotFoundException;
 
 import java.time.LocalDateTime;
 
 @Service
 public class ArticleService {
 
-    @Autowired
-    private ArticleRepository articleRepository;
+    private final ArticleRepository articleRepository;
+    private final LikesRepository likesRepository;
+    private final UserRepository userRepository;
+    private final BlogRepository blogRepository;
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private LikesRepository likesRepository;
-
-    // 글 생성
-    public ArticleResponse createArticle(Long userId, ArticleRequest articleRequest) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
+    public ArticleService(ArticleRepository articleRepository, LikesRepository likesRepository, UserRepository userRepository, BlogRepository blogRepository){
+        this.articleRepository = articleRepository;
+        this.likesRepository = likesRepository;
+        this.userRepository = userRepository;
+        this.blogRepository = blogRepository;
+    }
+    public ArticleResponse createArticle(CustomUserDetails customUserDetails, ArticleRequest articleRequest) {
+        User user = userRepository.findById(customUserDetails.getId())
+                .orElseThrow(() -> new NotFoundException("유저를 발견하지 못했습니다."));
+        Blog blog = blogRepository.findById(articleRequest.getBlogId())
+                .orElseThrow(() -> new NotFoundException("Blog를 발견하지 못했습니다."));
 
         Article article = new Article();
         article.setUser(user);
+        article.setBlog(blog);
         article.setTitle(articleRequest.getTitle());
-        article.setContent(articleRequest.getContent());
         article.setAbout(articleRequest.getAbout());
         article.setProblem(articleRequest.getProblem());
-        article.setSolution(articleRequest.getSolution());
-        article.setCreatedAt(LocalDateTime.now());
-        article.setUpdatedAt(LocalDateTime.now());
+        article.setContent(articleRequest.getContent());
 
         Article savedArticle = articleRepository.save(article);
 
-        return toArticleResponse(savedArticle);
+        return new ArticleResponse(
+                savedArticle.getArticleId(),
+                savedArticle.getBlog().getId(),
+                savedArticle.getUser().getId(),
+                savedArticle.getTitle(),
+                savedArticle.getBlog().getBlogName(),
+                savedArticle.getAbout(),
+                savedArticle.getProblem(),
+                savedArticle.getSolution(),
+                savedArticle.getContent(),
+                savedArticle.getLikeCount(),
+                savedArticle.getCreatedAt(),
+                savedArticle.getUpdatedAt());
     }
 
     // 글 수정

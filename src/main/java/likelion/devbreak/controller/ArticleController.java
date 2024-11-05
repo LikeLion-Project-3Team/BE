@@ -1,27 +1,32 @@
 package likelion.devbreak.controller;
 
-import likelion.devbreak.dto.ArticleRequest;
-import likelion.devbreak.dto.ArticleResponse;
+import likelion.devbreak.domain.dto.request.ArticleRequest;
+import likelion.devbreak.domain.dto.response.ArticleResponse;
+import likelion.devbreak.oAuth.domain.CustomUserDetails;
 import likelion.devbreak.service.ArticleService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/article")
+@CrossOrigin("*")
+@RequiredArgsConstructor
 public class ArticleController {
 
-    @Autowired
-    private ArticleService articleService;
-
-    // 글 생성
+    private final ArticleService articleService;
     @PostMapping
-    public ResponseEntity<ArticleResponse> createArticle(
-            @RequestParam Long userId,  // userId를 직접 전달
+    public ResponseEntity<?> createArticle(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
             @RequestBody ArticleRequest articleRequest) {
-
-        ArticleResponse createdArticle = articleService.createArticle(userId, articleRequest);
-        return ResponseEntity.ok(createdArticle);
+        try {
+            ArticleResponse createdArticle = articleService.createArticle(customUserDetails, articleRequest);
+            return ResponseEntity.ok().body(createdArticle);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 
     // 글 수정

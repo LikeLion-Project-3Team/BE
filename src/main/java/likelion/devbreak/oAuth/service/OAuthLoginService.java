@@ -28,19 +28,15 @@ public class OAuthLoginService {
 		Long userId = findOrCreateMember(infoResponse);
 
 		AuthTokens authTokens = authTokensGenerator.generate(userId);
-		String refreshToken = authTokens.getRefreshToken();
-		if (refreshToken == null || refreshToken.isEmpty()) {
-			throw new IllegalArgumentException("Refresh token cannot be null or empty");
-		}
 
 		Optional<RefreshToken> byUserId = refreshTokenRepository.findByUserId(userId);
 		if (byUserId.isPresent()) {
 			RefreshToken refreshTokenEntity = byUserId.get();
-			refreshTokenEntity.setToken(authTokens.getRefreshToken());
+			refreshTokenEntity.setRefreshToken(authTokens.getRefreshToken());
 			refreshTokenRepository.save(refreshTokenEntity);
 		} else {
 			RefreshToken refreshTokenEntity = new RefreshToken();
-			refreshTokenEntity.setToken(authTokens.getRefreshToken());
+			refreshTokenEntity.setRefreshToken(authTokens.getRefreshToken());
 			refreshTokenEntity.setUserId(userId);
 			refreshTokenRepository.save(refreshTokenEntity);
 		}
@@ -76,7 +72,7 @@ public class OAuthLoginService {
 		User user = userRepository.findById(user_id)
 			.orElseThrow(() -> new RuntimeException("User not found"));
 
-		Optional<RefreshToken> savedRefreshToken = refreshTokenRepository.findByToken(refreshToken);
+		Optional<RefreshToken> savedRefreshToken = refreshTokenRepository.findByRefreshToken(refreshToken);
 		if (savedRefreshToken.isEmpty()) {
 			throw new RuntimeException("Refresh token not found");
 		}
@@ -87,7 +83,7 @@ public class OAuthLoginService {
 			String.valueOf(user.getId()), new Date(System.currentTimeMillis() + 604800000)); // 7일 유효
 
 		RefreshToken newRefreshTokenEntity = savedRefreshToken.get();
-		newRefreshTokenEntity.setToken(newRefreshToken);
+		newRefreshTokenEntity.setRefreshToken(newRefreshToken);
 		refreshTokenRepository.save(newRefreshTokenEntity);
 
 		return new AuthTokens(newAccessToken, newRefreshToken, "Bearer", 3600L);
