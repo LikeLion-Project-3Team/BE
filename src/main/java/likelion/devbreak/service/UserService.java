@@ -15,7 +15,7 @@ public class UserService {
 
     public User findUserById(final Long userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> new UsernameNotFoundException(userId));
+                .orElseThrow(() -> new UsernameNotFoundException("User Not found"));
     }
 }
 }
