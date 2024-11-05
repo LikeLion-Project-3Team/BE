@@ -16,6 +16,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+    show-sql: true
   jwt:
     secret-key: kdfdkf4dsf54agkra32eakfk1djgkrmek32dfdstdfaerrfdsfdfagarghaehtertaew65525e6f2as266ae5r6efa5ef4ef1a26eesf
 
@@ -41,5 +42,4 @@ github:
   user-info-url: https://api.github.com/user
   api-url: https://github.com/login/oauth/access_token
   redirect-uri: http://localhost:8080/githubLogin
-  read: user
 

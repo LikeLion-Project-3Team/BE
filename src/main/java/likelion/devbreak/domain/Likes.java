@@ -14,6 +14,7 @@ public class Likes {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private Boolean isLiked;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
