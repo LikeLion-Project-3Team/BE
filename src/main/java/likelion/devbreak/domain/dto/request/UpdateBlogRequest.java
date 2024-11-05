@@ -16,7 +16,7 @@ public class UpdateBlogRequest {
     private String description;
     private String gitRepoUrl;
 
-    private List<User> contributors;
+    private User user;
     private List<Article> articles;
     private int favCount;
     private boolean favButton;

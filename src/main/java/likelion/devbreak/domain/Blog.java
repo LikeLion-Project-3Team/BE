@@ -21,20 +21,21 @@ public class Blog extends BaseTime{
     private String description;
     private String gitRepoUrl;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<User> contributors;
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-    @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "blog", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Article> articles;
 
     private int favCount;
     private boolean favButton;
 
-    public void UpdateBlog(UpdateBlogData data){
+    public void updateBlog(UpdateBlogData data){
         this.blogName = data.getBlogName();
         this.description = data.getDescription();
         this.gitRepoUrl = data.getGitRepoUrl();
-        this.contributors = data.getContributors();
+        this.user = data.getUser();
         this.articles = data.getArticles();
         this.favCount = data.getFavCount();
         this.favButton = data.isFavButton();
