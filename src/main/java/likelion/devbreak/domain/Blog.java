@@ -21,17 +21,11 @@ public class Blog extends BaseTime{
     private String description;
     private String gitRepoUrl;
 
-    @ElementCollection // 이거 재웅이한테 물어보기
-    @CollectionTable(name = "member_list", joinColumns = @JoinColumn(name = "member_id"))
-    @Column(name="members")
-    @Enumerated(EnumType.STRING)
-    private List<String> members;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<User> contributors;
 
-    @ElementCollection // 이거 재웅이한테 물어보기
-    @CollectionTable(name = "article_list", joinColumns = @JoinColumn(name = "member_id"))
-    @Column(name="members")
-    @Enumerated(EnumType.STRING)
-    private List<String> articles;
+    @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Article> articles;
 
     private int favCount;
     private boolean favButton;
@@ -40,7 +34,7 @@ public class Blog extends BaseTime{
         this.blogName = data.getBlogName();
         this.description = data.getDescription();
         this.gitRepoUrl = data.getGitRepoUrl();
-        this.members = data.getMembers();
+        this.contributors = data.getContributors();
         this.articles = data.getArticles();
         this.favCount = data.getFavCount();
         this.favButton = data.isFavButton();

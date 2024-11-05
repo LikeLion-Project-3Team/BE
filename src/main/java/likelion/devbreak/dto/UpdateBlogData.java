@@ -1,5 +1,8 @@
 package likelion.devbreak.dto;
 
+import likelion.devbreak.domain.Article;
+import likelion.devbreak.domain.User;
+import likelion.devbreak.domain.dto.request.UpdateBlogRequest;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -12,8 +15,8 @@ public class UpdateBlogData {
     private String description;
     private String gitRepoUrl;
 
-    private List<String> members;
-    private List<String> articles;
+    private List<User> contributors;
+    private List<Article> articles;
     private int favCount;
     private boolean favButton;
 
@@ -22,7 +25,7 @@ public class UpdateBlogData {
                 .blogName(request.getBlogName())
                 .description(request.getDescription())
                 .gitRepoUrl(request.getGitRepoUrl())
-                .members(request.getMembers())
+                .contributors(request.getContributors())
                 .articles(request.getArticles())
                 .build();
     }

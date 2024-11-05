@@ -1,10 +1,19 @@
-package likelion.devbreak.dto;
+package likelion.devbreak.domain.dto.response;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import likelion.devbreak.domain.Blog;
+import likelion.devbreak.dto.ResponseDto;
+import lombok.Builder;
+import lombok.Getter;
 
 import java.time.LocalDateTime;
 
-public class BlogEventResponse {
+
+@Getter
+@Builder
+@JsonNaming(value = PropertyNamingStrategies.SnakeCaseStrategy.class)
+public class BlogEventResponse implements ResponseDto {
     private Long id;
     private String name;
     private String description;
