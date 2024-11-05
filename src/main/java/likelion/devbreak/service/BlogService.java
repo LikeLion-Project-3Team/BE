@@ -2,9 +2,9 @@ package likelion.devbreak.service;
 
 import likelion.devbreak.domain.Blog;
 import likelion.devbreak.domain.User;
-import likelion.devbreak.dto.AddBlogResponse;
-import likelion.devbreak.dto.BlogEventResponse;
-import likelion.devbreak.dto.UpdateBlogRequest;
+import likelion.devbreak.domain.dto.response.AddBlogResponse;
+import likelion.devbreak.domain.dto.response.BlogEventResponse;
+import likelion.devbreak.domain.dto.request.UpdateBlogRequest;
 import likelion.devbreak.repository.BlogRepository;
 import likelion.devbreak.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
