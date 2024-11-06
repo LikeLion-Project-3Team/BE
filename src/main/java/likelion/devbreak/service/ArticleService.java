@@ -36,6 +36,7 @@ public class ArticleService {
                 .orElseThrow(() -> new NotFoundException("유저를 발견하지 못했습니다."));
         Blog blog = blogRepository.findById(articleRequest.getBlogId())
                 .orElseThrow(() -> new NotFoundException("Blog를 발견하지 못했습니다."));
+        articleRequest.
 
         Article article = new Article();
         article.setUser(user);

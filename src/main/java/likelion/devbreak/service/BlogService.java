@@ -7,6 +7,7 @@ import likelion.devbreak.domain.dto.response.BlogEventResponse;
 import likelion.devbreak.domain.dto.request.UpdateBlogRequest;
 import likelion.devbreak.domain.dto.response.GetBlogResponse;
 import likelion.devbreak.dto.UpdateBlogData;
+import likelion.devbreak.oAuth.domain.CustomUserDetails;
 import likelion.devbreak.repository.BlogRepository;
 import likelion.devbreak.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,10 +27,13 @@ public class BlogService {
     private final UserRepository userRepository;
 
     // 블로그 생성 관련 서비스
-    public BlogResponse addBlog(Long userId, UpdateBlogRequest request) {
-        User user = userRepository.findById(userId)
+
+    public BlogResponse addBlog(CustomUserDetails customUserDetails, UpdateBlogRequest request) {
+        User user = userRepository.findById(customUserDetails.getId())
+
                 .orElseThrow(() -> new RuntimeException("User Not Found"));
         Blog blog = Blog.builder()
+                .user(user)
                 .blogName(request.getBlogName())
                 .description(request.getDescription())
                 .gitRepoUrl(request.getGitRepoUrl())

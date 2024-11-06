@@ -27,11 +27,12 @@ public class BlogController {
 
     // 블로그 생성
     @PostMapping("/blog")
-    public ResponseEntity<ResponseDto> addBlog(Authentication authentication, @RequestBody UpdateBlogRequest request) {
+    public ResponseEntity<ResponseDto> addBlog(@AuthenticationPrincipal CustomUserDetails customUserDetails, @RequestBody UpdateBlogRequest request) {
         log.info("Request to POST Blog");
-        Long userId = ((CustomUserDetails) authentication.getPrincipal()).getId();
-        BlogResponse response = blogService.addBlog(userId, request);
+        BlogResponse response = blogService.addBlog(customUserDetails, request);
+
         return new ResponseEntity<>(response, HttpStatus.OK);
+
     }
 
     // 사용자의 모든 블로그 조회
