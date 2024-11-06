@@ -27,8 +27,10 @@ public class BlogService {
     private final UserRepository userRepository;
 
     // 블로그 생성 관련 서비스
+
     public BlogResponse addBlog(CustomUserDetails customUserDetails, UpdateBlogRequest request) {
         User user = userRepository.findById(customUserDetails.getId())
+
                 .orElseThrow(() -> new RuntimeException("User Not Found"));
         Blog blog = Blog.builder()
                 .user(user)

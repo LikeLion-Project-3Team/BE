@@ -30,6 +30,7 @@ public class BlogController {
     public ResponseEntity<ResponseDto> addBlog(@AuthenticationPrincipal CustomUserDetails customUserDetails, @RequestBody UpdateBlogRequest request) {
         log.info("Request to POST Blog");
         BlogResponse response = blogService.addBlog(customUserDetails, request);
+
         return new ResponseEntity<>(response, HttpStatus.OK);
 
     }
