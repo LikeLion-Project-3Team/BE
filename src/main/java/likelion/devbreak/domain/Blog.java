@@ -2,16 +2,19 @@ package likelion.devbreak.domain;
 
 import jakarta.persistence.*;
 import likelion.devbreak.dto.UpdateBlogData;
+import likelion.devbreak.listener.ArticleListener;
+import likelion.devbreak.listener.BlogListener;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 
 @Entity
 @Getter @Builder
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Blog extends BaseTime{
+@EntityListeners(BlogListener.class)
+public class Blog{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "blog_id")
@@ -21,24 +24,33 @@ public class Blog extends BaseTime{
     private String description;
     private String gitRepoUrl;
 
+    @Setter
+    private int favCount;
+    @Setter
+    private LocalDateTime createdAt;
+    @Setter
+    private LocalDateTime updatedAt;
+
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @OneToMany(mappedBy = "blog", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Article> articles;
+    private Set<Article> articles;
 
-    private int favCount;
-    private boolean favButton;
+    @OneToMany(mappedBy = "blog", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Favorites> favorites;
+
+    @OneToMany(mappedBy = "blog", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<BlogMember> blogMembers;
 
     public void updateBlog(UpdateBlogData data){
         this.blogName = data.getBlogName();
         this.description = data.getDescription();
-        this.gitRepoUrl = data.getGitRepoUrl();
-        this.user = data.getUser();
-        this.articles = data.getArticles();
-        this.favCount = data.getFavCount();
-        this.favButton = data.isFavButton();
+    }
+
+    public Blog(){
+
     }
 
 }

@@ -1,7 +1,8 @@
 package likelion.devbreak.controller;
 
-import likelion.devbreak.domain.dto.response.ActivityResponse;
-import likelion.devbreak.domain.dto.response.RepoResponse;
+import likelion.devbreak.oAuth.domain.dto.response.ActivityResponse;
+import likelion.devbreak.oAuth.domain.dto.response.ContributorsResponse;
+import likelion.devbreak.oAuth.domain.dto.response.RepoResponse;
 import likelion.devbreak.oAuth.domain.CustomUserDetails;
 import likelion.devbreak.oAuth.domain.github.GitHubClient;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -19,13 +20,13 @@ public class GitHubController {
     }
 
     //레포 목록 가져오기
-    @GetMapping("/api/repos")
+    @GetMapping("/repos")
     public Flux<RepoResponse> getUserRepositories(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
         return gitHubClient.getUserRepositories(customUserDetails);
     }
 
     //이슈 및 커밋 둘다 가져오기
-    @GetMapping("/api/issues-and-commits")
+    @GetMapping("/issues-and-commits")
     public Flux<ActivityResponse> getIssuesAndCommits(@AuthenticationPrincipal CustomUserDetails customUserDetails, @RequestBody RepoResponse repoResponse) {
         Flux<ActivityResponse> issueResponses = gitHubClient.getIssues(customUserDetails, repoResponse)
                 .map(issue -> new ActivityResponse(
@@ -45,4 +46,5 @@ public class GitHubController {
 
         return Flux.merge(issueResponses, commitResponses);
     }
+
 }

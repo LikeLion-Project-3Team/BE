@@ -1,19 +1,30 @@
 package likelion.devbreak.domain;
 
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter @Setter
+@Entity
 public class BlogMember {
-    private String userName;
-    private Long userId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "blogMember_id")
+    private Long id;
+
     private Long blogId;
 
-    public BlogMember(String userName, Long userId, Long blogId){
-        this.userName = userName;
-        this.userId = userId;
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    public BlogMember(User user, Long blogId){
+        this.user = user;
         this.blogId = blogId;
     }
+    public BlogMember(){
 
-    public String getUserName() {
-        return userName;
     }
-
 
 }

@@ -3,12 +3,16 @@ package likelion.devbreak.domain.dto.response;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import likelion.devbreak.domain.Blog;
+import likelion.devbreak.domain.BlogMember;
 import likelion.devbreak.domain.User;
 import likelion.devbreak.dto.ResponseDto;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.lang.reflect.Member;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 @Getter
 @Builder
@@ -19,22 +23,25 @@ public class BlogResponse implements ResponseDto {
     private String blogName;
     private String description;
     private String gitRepoUrl;
-    private User user;
+    private List<BlogMember> members;
     private int favCount;
-    private boolean favButton;
-    private LocalDateTime updatedAt;
+    private Boolean favButton;
+    private String createdAt;
 
-    public static BlogResponse createWith(Blog blog) {
+    public static BlogResponse createWith(Blog blog, List<BlogMember> members) {
+        DateTimeFormatter stringDate = DateTimeFormatter.ofPattern("yyyy.MM.dd");
+        String formattedCreatedAt = blog.getCreatedAt().format(stringDate);
+
         return BlogResponse.builder()
                 .blogId(blog.getId())
                 .userId(blog.getId())
                 .blogName(blog.getBlogName())
                 .description(blog.getDescription())
                 .gitRepoUrl(blog.getGitRepoUrl())
-                .user(blog.getUser())
+                .members(members)
                 .favCount(blog.getFavCount())
-                .favButton(blog.isFavButton())
-                .updatedAt(blog.getUpdatedAt())
+                .favButton(false)
+                .createdAt(formattedCreatedAt)
                 .build();
     }
 
