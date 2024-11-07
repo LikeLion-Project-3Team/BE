@@ -20,28 +20,26 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api")
+@RequestMapping("/api/blog")
 public class BlogController {
 
     private final BlogService blogService;
 
     // 블로그 생성
-    @PostMapping("/blog")
+    @PostMapping()
     public ResponseEntity<ResponseDto> addBlog(@AuthenticationPrincipal CustomUserDetails customUserDetails, @RequestBody UpdateBlogRequest request) {
         log.info("Request to POST Blog");
         BlogResponse response = blogService.addBlog(customUserDetails, request);
-
         return new ResponseEntity<>(response, HttpStatus.OK);
 
     }
 
     // 사용자의 모든 블로그 조회
-    @GetMapping("/blog")
-    public ResponseEntity<?> findAllBlogs(Authentication authentication) {
+    @GetMapping()
+    public ResponseEntity<?> findAllBlogs(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
         log.info("Request to GET all blogs");
         try {
-            Long userId = ((CustomUserDetails) authentication.getPrincipal()).getId();
-            List<BlogEventResponse> blogs = blogService.getAllBlogEvents(userId);
+            List<BlogEventResponse> blogs = blogService.getAllBlogEvents(customUserDetails);
             return ResponseEntity.ok(blogs);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
@@ -49,25 +47,48 @@ public class BlogController {
     }
 
     // 특정 블로그 조회
-    @GetMapping("/blog/{blogId}")
+    @GetMapping("/{blogId}")
     public ResponseEntity<ResponseDto> getBlog(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             @PathVariable("blogId") Long blogId) {
         log.info("Request to GET a Blog");
-        GetBlogResponse response = blogService.getBlog(blogId);
+        GetBlogResponse response = blogService.getBlog(customUserDetails, blogId);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     // 특정 블로그 수정
-    @PutMapping("blog/{blogId}")
+    @PutMapping("/{blogId}")
     public ResponseEntity<ResponseDto> updateBlog(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             @PathVariable("blogId") Long blogId,
             @RequestBody UpdateBlogRequest request) {
-        BlogResponse response = blogService.updateBlog(blogId, request);
+        GetBlogResponse response = blogService.updateBlog(customUserDetails, blogId, request);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+    //블로그 즐겨찾기 기능
+    @PutMapping("/{blogId}/favorites")
+    public ResponseEntity<?> favToggle(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            @PathVariable("blogId") Long blogId){
+        try {
+            GetBlogResponse response = blogService.favoriteToggle(customUserDetails,blogId);
+            return ResponseEntity.ok(response);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("잘못된 요청입니다.");
+        }
+    }
 
+    @DeleteMapping("/{blogId}")
+    public ResponseEntity<?> deleteBlog(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            @PathVariable("blogId") Long blogId){
+        try {
+            blogService.deleteBlog(customUserDetails, blogId);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
 
 
 }

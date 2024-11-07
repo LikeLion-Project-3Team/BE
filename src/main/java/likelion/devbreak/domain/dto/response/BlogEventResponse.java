@@ -17,26 +17,13 @@ import java.util.List;
 @Builder
 @JsonNaming(value = PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class BlogEventResponse implements ResponseDto {
-    private Long id;
+    private Long blogId;
     private String blogName;
-    private User user;
-    private List<Article> articles;
     private String description;
-    private String gitRepoUrl;
-    private int favCount;
-    private Boolean favButton;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 
     public BlogEventResponse(Blog blog) {
-        this.id = blog.getId();
+        this.blogId = blog.getId();
         this.blogName = blog.getBlogName();
-        this.user = blog.getUser();
-        this.articles = blog.getArticles();
         this.description = blog.getDescription();
-        this.gitRepoUrl = blog.getGitRepoUrl();
-        this.favCount = blog.getFavCount();
-        this.favButton = blog.isFavButton();
     }
-
 }

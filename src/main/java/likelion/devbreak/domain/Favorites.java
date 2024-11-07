@@ -1,16 +1,30 @@
 package likelion.devbreak.domain;
 
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
+@Entity
+@Getter @Setter
 public class Favorites {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private Boolean isFavorited;
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private Long userId;
+    private User user;
 
     @ManyToOne
     @JoinColumn(name = "blog_id", nullable = false)
-    private Long blogId;
-    private boolean isFavorited;
+    private Blog blog;
+
+    public Favorites(Boolean isFavorited, User user, Blog blog){
+        this.isFavorited = isFavorited;
+        this.user = user;
+        this.blog = blog;
+    }
 }

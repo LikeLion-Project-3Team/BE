@@ -1,4 +1,4 @@
-package likelion.devbreak.domain.dto.response;
+package likelion.devbreak.oAuth.domain.dto.response;
 
 import lombok.Getter;
 import lombok.Setter;
