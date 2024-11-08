@@ -19,10 +19,7 @@ public class Article {
 
     private String title;
     private String content;
-    private String about;
-    private String problem;
-    private String solution;
-    private Long likeCount;
+    private int likeCount;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -34,5 +31,9 @@ public class Article {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    public  Article(){
+
+    }
 
 }

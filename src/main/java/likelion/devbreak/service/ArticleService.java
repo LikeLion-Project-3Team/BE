@@ -1,9 +1,6 @@
 package likelion.devbreak.service;
 
-import likelion.devbreak.domain.Article;
-import likelion.devbreak.domain.Blog;
-import likelion.devbreak.domain.User;
-import likelion.devbreak.domain.Likes;
+import likelion.devbreak.domain.*;
 import likelion.devbreak.domain.dto.request.ArticleRequest;
 import likelion.devbreak.domain.dto.response.ArticleResponse;
 import likelion.devbreak.oAuth.domain.CustomUserDetails;
@@ -25,118 +22,108 @@ public class ArticleService {
     private final UserRepository userRepository;
     private final BlogRepository blogRepository;
 
-    public ArticleService(ArticleRepository articleRepository, LikesRepository likesRepository, UserRepository userRepository, BlogRepository blogRepository){
+    private final GlobalService globalService;
+
+    public ArticleService(ArticleRepository articleRepository, LikesRepository likesRepository, UserRepository userRepository, BlogRepository blogRepository, GlobalService globalService){
         this.articleRepository = articleRepository;
         this.likesRepository = likesRepository;
         this.userRepository = userRepository;
         this.blogRepository = blogRepository;
+        this.globalService = globalService;
     }
     public ArticleResponse createArticle(CustomUserDetails customUserDetails, ArticleRequest articleRequest) {
-        User user = userRepository.findById(customUserDetails.getId())
-                .orElseThrow(() -> new NotFoundException("유저를 발견하지 못했습니다."));
-        Blog blog = blogRepository.findById(articleRequest.getBlogId())
-                .orElseThrow(() -> new NotFoundException("Blog를 발견하지 못했습니다."));
-        articleRequest.
+        User user = globalService.findUser(customUserDetails);
+        Blog blog = globalService.findBlogById(articleRequest.getBlogId());
 
         Article article = new Article();
         article.setUser(user);
         article.setBlog(blog);
         article.setTitle(articleRequest.getTitle());
-        article.setAbout(articleRequest.getAbout());
-        article.setProblem(articleRequest.getProblem());
         article.setContent(articleRequest.getContent());
+        article.setLikeCount(0);
+
+        Likes likes = new Likes(false, user, article);
 
         Article savedArticle = articleRepository.save(article);
+        Likes isLiked = likesRepository.save(likes);
 
-        return new ArticleResponse(
-                savedArticle.getArticleId(),
-                savedArticle.getBlog().getId(),
-                savedArticle.getUser().getId(),
-                savedArticle.getTitle(),
-                savedArticle.getBlog().getBlogName(),
-                savedArticle.getAbout(),
-                savedArticle.getProblem(),
-                savedArticle.getSolution(),
-                savedArticle.getContent(),
-                savedArticle.getLikeCount(),
-                savedArticle.getCreatedAt(),
-                savedArticle.getUpdatedAt());
+        return toArticleResponse(savedArticle, isLiked);
+    }
+
+    // 특정 글 조회
+    public ArticleResponse getArticleById(Long articleId, CustomUserDetails customUserDetails) {
+        User user = globalService.findUser(customUserDetails);
+        Article article = globalService.findArticleById(articleId);
+
+        Likes like = likesRepository.findByUserIdAndArticleId(user.getId(), articleId)
+                .orElseThrow(()->new NotFoundException("좋아요 여부를 알 수 없습니다."));
+
+        return toArticleResponse(article, like);
     }
 
     // 글 수정
-    public ArticleResponse updateArticle(Long articleId, Long userId, ArticleRequest articleRequest) {
-        Article existingArticle = articleRepository.findById(articleId)
-                .orElseThrow(() -> new IllegalArgumentException("Article not found"));
+    public ArticleResponse updateArticle(Long articleId, CustomUserDetails customUserDetails, ArticleRequest articleRequest) {
+        User user = globalService.findUser(customUserDetails);
+        globalService.findBlogById(articleRequest.getBlogId());
+        Article article = globalService.findArticleById(articleId);
 
-        if (!existingArticle.getUser().getId().equals(userId)) {
-            throw new IllegalArgumentException("User not authorized to update this article");
+        if(article.getUser().getId() != user.getId()){
+            throw new IllegalArgumentException("수정 권한이 없습니다.");
         }
+        article.setTitle(articleRequest.getTitle());
+        article.setContent(articleRequest.getContent());
 
-        existingArticle.setTitle(articleRequest.getTitle());
-        existingArticle.setContent(articleRequest.getContent());
-        existingArticle.setUpdatedAt(LocalDateTime.now());
+        Likes like = likesRepository.findByUserIdAndArticleId(user.getId(), articleId)
+                .orElseThrow(()->new NotFoundException("좋아요 여부를 알 수 없습니다."));
 
-        Article updatedArticle = articleRepository.save(existingArticle);
-        return toArticleResponse(updatedArticle);
+        Article updatedArticle = articleRepository.save(article);
+        return toArticleResponse(updatedArticle, like);
     }
 
     // 글 삭제
-    public void deleteArticle(Long articleId, Long userId) {
-        Article article = articleRepository.findById(articleId)
-                .orElseThrow(() -> new IllegalArgumentException("Article not found"));
+    public void deleteArticle(Long articleId, CustomUserDetails customUserDetails) {
+        User user = globalService.findUser(customUserDetails);
+        Article article = globalService.findArticleById(articleId);
 
-        if (!article.getUser().getId().equals(userId)) {
-            throw new IllegalArgumentException("User not authorized to delete this article");
+        if(article.getUser().getId() != user.getId()){
+            throw new IllegalArgumentException("삭제 권한이 없습니다.");
         }
 
         articleRepository.delete(article);
     }
 
-    // 특정 글 조회
-    public ArticleResponse getArticleById(Long articleId) {
-        Article article = articleRepository.findById(articleId)
-                .orElseThrow(() -> new IllegalArgumentException("Article not found"));
 
-        return toArticleResponse(article);
-    }
 
     // 좋아요 및 좋아요 취소 기능
-    public ArticleResponse toggleLike(Long articleId, Long userId) {
-        Article article = articleRepository.findById(articleId)
-                .orElseThrow(() -> new IllegalArgumentException("Article not found"));
+    public ArticleResponse toggleLike(Long articleId, CustomUserDetails customUserDetails) {
+        User user = globalService.findUser(customUserDetails);
+        Article article = globalService.findArticleById(articleId);
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        Likes like = likesRepository.findByUserIdAndArticleId(user.getId(), articleId)
+                .orElseThrow(()->new NotFoundException("좋아요 여부를 알 수 없습니다."));
+        like.setIsLiked(!like.getIsLiked());
 
-        Likes like = likesRepository.findByUserAndArticle(user, article);
+        article.setLikeCount(article.getLikeCount() + (like.getIsLiked() ? 1 : -1));
 
-        if (like != null) {
-            likesRepository.delete(like);
-            article.setLikeCount(article.getLikeCount() - 1);
-        } else {
-            likesRepository.save(new Likes(user, article));
-            article.setLikeCount(article.getLikeCount() + 1);
-        }
+        likesRepository.save(like);
 
-        Article updatedArticle = articleRepository.save(article);
-        return toArticleResponse(updatedArticle);
+        Article likedArticle = articleRepository.save(article);
+        return toArticleResponse(likedArticle, like);
     }
 
     // Article 엔티티를 ArticleResponse로 변환하는 메서드
-    private ArticleResponse toArticleResponse(Article article) {
-        ArticleResponse response = new ArticleResponse();
-        response.setUserId(article.getUser().getId());
-        response.setBlogId(article.getBlog().getId()); // assuming Article has a reference to Blog
-        response.setArticleId(article.getId());
-        response.setTitle(article.getTitle());
-        response.setBlogName("dummy blog name"); // 실제 데이터와 연결 필요
-        response.setAbout(article.getAbout());
-        response.setProblem(article.getProblem());
-        response.setSolution(article.getSolution());
-        response.setContent(article.getContent());
-        response.setLikeCount(article.getLikeCount());
-        response.setCreatedAt(article.getCreatedAt());
-        response.setUpdatedAt(article.getUpdatedAt());
-        return response;
+    private ArticleResponse toArticleResponse(Article article, Likes like) {
+        ArticleResponse articleResponse = new ArticleResponse(
+                article.getId(),
+                article.getBlog().getId(),
+                article.getUser().getId(),
+                article.getTitle(),
+                article.getBlog().getBlogName(),
+                article.getContent(),
+                article.getLikeCount(),
+                like.getIsLiked(),
+                article.getCreatedAt(),
+                article.getUpdatedAt());
+        return articleResponse;
     }
 }
