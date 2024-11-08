@@ -13,15 +13,18 @@ public class BlogMember {
     @Column(name = "blogMember_id")
     private Long id;
 
-    private Long blogId;
-
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    public BlogMember(User user, Long blogId){
+    @ManyToOne
+    @JoinColumn(name = "blog_id", nullable = false)
+    private Blog blog;
+
+
+    public BlogMember(User user,Blog blog){
         this.user = user;
-        this.blogId = blogId;
+        this.blog = blog;
     }
     public BlogMember(){
 

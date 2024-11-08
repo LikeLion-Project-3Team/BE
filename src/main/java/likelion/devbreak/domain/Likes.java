@@ -25,7 +25,8 @@ public class Likes {
     private Article article;
 
     // 생성자
-    public Likes(User user, Article article) {
+    public Likes(Boolean isLiked, User user, Article article) {
+        this.isLiked = isLiked;
         this.user = user;
         this.article = article;
     }
