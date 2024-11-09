@@ -21,6 +21,6 @@ public class ArticleListResponse {
         this.blogId = getBlogId();
         this.title = getTitle();
         this.blogName = getBlogName();
-        this.createdAt = createdAt != null ? createdAt.format(String.valueOf(DateTimeFormatter.ofPattern("yyyy.MM.dd"))) : null;
+        this.createdAt = article.getCreatedAt() != null ? article.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd")) : null;
     }
 }

@@ -12,10 +12,11 @@ import likelion.devbreak.repository.ArticleRepository;
 import likelion.devbreak.repository.BlogRepository;
 import likelion.devbreak.repository.LikesRepository;
 import likelion.devbreak.repository.UserRepository;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.webjars.NotFoundException;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ArticleService {
@@ -132,11 +133,13 @@ public class ArticleService {
 
 
     // 한 페이지당 15개글 조회 - Page 반환타입 사용해봤는데 에러가 뜨면 추후에 List로 바꿔,,,볼게요..
-    public Page<ArticleListResponse> getAllArticles(int page) {
-        PageRequest pageRequest = PageRequest.of(page, 15);
+    public List<ArticleListResponse> getAllArticles(CustomUserDetails customUserDetails) {
+        List<Article> articles = articleRepository.findAllByOrderByCreatedAtDesc();
 
-        return articleRepository.findAllByOrderByCreatedAtDesc(pageRequest)
-                .map(ArticleListResponse::new);
+        return articles.stream()
+                .map(ArticleListResponse::new)
+                .collect(Collectors.toList());
+
     }
 
 }
