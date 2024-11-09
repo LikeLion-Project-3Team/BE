@@ -132,7 +132,7 @@ public class ArticleService {
     }
 
 
-    // 한 페이지당 15개글 조회 - Page 반환타입 사용해봤는데 에러가 뜨면 추후에 List로 바꿔,,,볼게요..
+    // 글 전체 조회
     public List<ArticleListResponse> getAllArticles(CustomUserDetails customUserDetails) {
         List<Article> articles = articleRepository.findAllByOrderByCreatedAtDesc();
 
