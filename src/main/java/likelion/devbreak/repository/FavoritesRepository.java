@@ -8,7 +8,7 @@ import java.util.Optional;
 
 public interface FavoritesRepository extends JpaRepository<Favorites, Long> {
 
-    Optional<Favorites> findByUserIAndBlogId(Long userId, Long blogId);
+    Optional<Favorites> findByUserIdAndBlogId(Long userId, Long blogId);
 
     List<Favorites> findByUserIdAndIsFavoritedTrue(Long userId);
 

@@ -32,8 +32,6 @@ public class Blog{
     private LocalDateTime createdAt;
     @Setter
     private LocalDateTime updatedAt;
-    @Setter
-    private Boolean isFavorited = false;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)

@@ -5,10 +5,7 @@ import likelion.devbreak.domain.BlogMember;
 import likelion.devbreak.domain.Favorites;
 import likelion.devbreak.domain.User;
 import likelion.devbreak.domain.dto.request.UpdateBlogRequest;
-import likelion.devbreak.domain.dto.response.BlogEventResponse;
-import likelion.devbreak.domain.dto.response.BlogResponse;
-import likelion.devbreak.domain.dto.response.BreakThrough;
-import likelion.devbreak.domain.dto.response.GetBlogResponse;
+import likelion.devbreak.domain.dto.response.*;
 import likelion.devbreak.dto.UpdateBlogData;
 import likelion.devbreak.oAuth.domain.CustomUserDetails;
 import likelion.devbreak.oAuth.domain.github.GitHubClient;
@@ -19,7 +16,6 @@ import likelion.devbreak.repository.FavoritesRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.webjars.NotFoundException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -149,16 +145,18 @@ public class BlogService {
     }
 
     //즐겨찾기 상위 10개 블로그 반환
-    public List<Blog> getTopFavBlogs() {
-        return blogRepository.findTop10ByOrderByFavCountDesc();
+    public List<BlogListResponse> getTopFavBlogs() {
+        return blogRepository.findTop10ByOrderByFavCountDesc().stream()
+                .map(blog -> new BlogListResponse(blog))
+                .collect(Collectors.toList());
     }
 
     //유저가 즐겨찾기한 블로그 모음
-    public List<BlogEventResponse> getFavBlogs(CustomUserDetails customUserDetails) {
+    public List<BlogListResponse> getFavBlogs(CustomUserDetails customUserDetails) {
         User user = globalService.findUser(customUserDetails);
 
         return favoritesRepository.findByUserIdAndIsFavoritedTrue(user.getId()).stream()
-                .map(favorites -> new BlogEventResponse(favorites.getBlog()))
+                .map(favorites -> BlogListResponse.createWithBlogList(favorites.getBlog()))
                 .collect(Collectors.toList());
     }
 }

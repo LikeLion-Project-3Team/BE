@@ -14,7 +14,7 @@ public class Favorites {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Boolean isFavorited = false;
+    private Boolean isFavorited;
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
