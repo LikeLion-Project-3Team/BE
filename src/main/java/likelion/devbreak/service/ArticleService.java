@@ -141,4 +141,24 @@ public class ArticleService {
                 .collect(Collectors.toList());
     }
 
+    // 좋아요 순으로 상위 10개 글 목록 조회
+    public List<ArticleListResponse> getArticlesSortedByLikes() {
+        // 상위 10개 글만 조회
+        List<Article> articles = articleRepository.findTop10ByOrderByLikeCountDesc();
+        return articles.stream()
+                .map(ArticleListResponse::new)
+                .collect(Collectors.toList());
+    }
+
+    //좋아요 누른글 목록 조회
+    public List<ArticleListResponse> getLikedArticles(CustomUserDetails customUserDetails) {
+        User user = globalService.findUser(customUserDetails);
+        List<Likes> likes = likesRepository.findByUserIdAndIsLikedTrue(user.getId());
+
+        return likes.stream()
+                .map(like -> new ArticleListResponse(like.getArticle()))
+                .collect(Collectors.toList());
+    }
+
+
 }

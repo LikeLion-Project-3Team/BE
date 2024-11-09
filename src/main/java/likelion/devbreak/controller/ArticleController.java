@@ -99,4 +99,29 @@ public class ArticleController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+
+    // 좋아요 순으로 글 목록 조회
+    @GetMapping("/home/article")
+    public ResponseEntity<?> getArticlesSortedByLikes() {
+        try {
+            List<ArticleListResponse> response = articleService.getArticlesSortedByLikes();
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(400).body(e.getMessage());
+        }
+    }
+
+
+    // 유저가 좋아요를 누른 글 목록 조회
+    @GetMapping("/home/article/like")
+    public ResponseEntity<?> getLikedArticles(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        try {
+            List<ArticleListResponse> response = articleService.getLikedArticles(customUserDetails);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(400).body(e.getMessage());
+        }
+    }
+
 }
