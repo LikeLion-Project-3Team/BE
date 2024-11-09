@@ -2,19 +2,18 @@ package likelion.devbreak.domain.dto.response;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import likelion.devbreak.domain.Article;
 import likelion.devbreak.domain.Blog;
-import likelion.devbreak.domain.User;
 import likelion.devbreak.dto.ResponseDto;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-
-import java.time.LocalDateTime;
-import java.util.List;
+import lombok.NoArgsConstructor;
 
 
 @Getter
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @JsonNaming(value = PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class BlogEventResponse implements ResponseDto {
     private Long blogId;
@@ -25,5 +24,13 @@ public class BlogEventResponse implements ResponseDto {
         this.blogId = blog.getId();
         this.blogName = blog.getBlogName();
         this.description = blog.getDescription();
+    }
+
+    public static BlogEventResponse createWithBlogList(Blog blog){
+        return new BlogEventResponse(
+                blog.getId(),
+                blog.getBlogName(),
+                blog.getDescription()
+        );
     }
 }

@@ -1,6 +1,5 @@
 package likelion.devbreak.controller;
 
-import likelion.devbreak.domain.Blog;
 import likelion.devbreak.domain.dto.request.UpdateBlogRequest;
 import likelion.devbreak.domain.dto.response.BlogEventResponse;
 import likelion.devbreak.domain.dto.response.BlogResponse;
@@ -95,8 +94,8 @@ public class BlogController {
     @GetMapping("/home/top_fav_blogs")
     public ResponseEntity<?> getTopFavBlogs() {
         try {
-            List<Blog> topFavBlogs = blogService.getTopFavBlogs();
-            return ResponseEntity.ok(topFavBlogs);
+            List<BlogEventResponse> response = blogService.getTopFavBlogs();
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }

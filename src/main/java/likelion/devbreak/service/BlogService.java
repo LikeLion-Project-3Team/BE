@@ -159,8 +159,10 @@ public class BlogService {
     }
 
     //즐겨찾기 상위 10개 블로그 반환
-    public List<Blog> getTopFavBlogs() {
-        return blogRepository.findTop10ByOrderByFavCountDesc();
+    public List<BlogEventResponse> getTopFavBlogs() {
+        return blogRepository.findTop10ByOrderByFavCountDesc().stream()
+                .map(blog -> new BlogEventResponse(blog))
+                .collect(Collectors.toList());
     }
 
     //유저가 즐겨찾기한 블로그 모음
@@ -168,7 +170,7 @@ public class BlogService {
         User user = globalService.findUser(customUserDetails);
 
         return favoritesRepository.findByUserIdAndIsFavoritedTrue(user.getId()).stream()
-                .map(favorites -> new BlogEventResponse(favorites.getBlog()))
+                .map(favorites -> BlogEventResponse.createWithBlogList(favorites.getBlog()))
                 .collect(Collectors.toList());
     }
 }
