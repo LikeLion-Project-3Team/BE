@@ -9,4 +9,6 @@ import java.util.Optional;
 public interface BlogRepository extends JpaRepository<Blog, Long> {
     List<Blog> findAllByUserId(Long userId);
     Optional<Blog> findByGitRepoUrl(String gitRepoUrl);
+
+    List<Blog> findTop10ByOrderByFavCountDesc();
 }

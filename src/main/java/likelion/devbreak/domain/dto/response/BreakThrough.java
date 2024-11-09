@@ -12,7 +12,7 @@ public class BreakThrough {
     private String articleTitle;
     public String createdAt;
 
-    public BreakThrough(Long articleId, String articleTitle, LocalDateTime createdAt){
+    public BreakThrough(Long articleId, String articleTitle, LocalDateTime createdAt) {
         this.articleId = articleId;
         this.articleTitle = articleTitle;
         this.createdAt = createdAt != null ? createdAt.format(DateTimeFormatter.ofPattern("yyyy.MM.dd")) : null;
