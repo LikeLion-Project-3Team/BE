@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.*;
 public class ArticleController {
 
     private final ArticleService articleService;
+
+    // 글 생성
     @PostMapping
     public ResponseEntity<?> createArticle(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
@@ -29,43 +31,56 @@ public class ArticleController {
         }
     }
 
+    // 특정 글 조회
+    @GetMapping("/{articleId}")
+    public ResponseEntity<?> getArticle(
+            @PathVariable Long articleId,
+            @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        try {
+            ArticleResponse article = articleService.getArticleById(articleId, customUserDetails);
+            return ResponseEntity.ok().body(article);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
     // 글 수정
     @PutMapping("/{articleId}")
-    public ResponseEntity<ArticleResponse> updateArticle(
+    public ResponseEntity<?> updateArticle(
             @PathVariable Long articleId,
-            @RequestParam Long userId,  // userId를 직접 전달
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
             @RequestBody ArticleRequest articleRequest) {
-
-        ArticleResponse updatedArticle = articleService.updateArticle(articleId, userId, articleRequest);
-        return ResponseEntity.ok(updatedArticle);
+        try {
+            ArticleResponse article = articleService.updateArticle(articleId, customUserDetails, articleRequest);
+            return ResponseEntity.ok().body(article);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 
     // 글 삭제
     @DeleteMapping("/{articleId}")
-    public ResponseEntity<String> deleteArticle(
+    public ResponseEntity<?> deleteArticle(
             @PathVariable Long articleId,
-            @RequestParam Long userId) {  // userId를 직접 전달
-
-        articleService.deleteArticle(articleId, userId);
-        return ResponseEntity.ok("Article deleted successfully");
-    }
-
-    // 특정 글 조회
-    @GetMapping("/{articleId}")
-    public ResponseEntity<ArticleResponse> getArticle(
-            @PathVariable Long articleId) {
-
-        ArticleResponse article = articleService.getArticleById(articleId);
-        return ResponseEntity.ok(article);
+            @AuthenticationPrincipal CustomUserDetails customUserDetails){
+        try {
+            articleService.deleteArticle(articleId, customUserDetails);
+            return ResponseEntity.ok().body("DELETE SUCCESSFULLY");
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 
     // 좋아요 및 좋아요 취소
     @PutMapping("/{articleId}/like")
-    public ResponseEntity<ArticleResponse> toggleLike(
+    public ResponseEntity<?> likeToggle(
             @PathVariable Long articleId,
-            @RequestParam Long userId) {  // userId를 직접 전달
-
-        ArticleResponse article = articleService.toggleLike(articleId, userId);
-        return ResponseEntity.ok(article);
+            @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        try {
+            ArticleResponse articleResponse = articleService.toggleLike(articleId, customUserDetails);
+            return ResponseEntity.ok().body(articleResponse);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 }

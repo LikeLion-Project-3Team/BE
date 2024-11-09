@@ -1,5 +1,6 @@
 package likelion.devbreak.oAuth.domain.github;
 
+import likelion.devbreak.domain.Blog;
 import likelion.devbreak.domain.BlogMember;
 import likelion.devbreak.domain.User;
 import likelion.devbreak.oAuth.domain.dto.response.CommitResponse;
@@ -66,12 +67,13 @@ public class GitHubClient {
 
     public List<BlogMember> getContributors(CustomUserDetails customUserDetails, String gitRepoUrl, Long blogId) {
         User user = globalService.findUser(customUserDetails);
+        Blog blog = globalService.findBlogById(blogId);
         return webClient.get()
                 .uri("/repos/{owner}/{repo}/contributors", user.getUserName(), gitRepoUrl)
                 .retrieve()
                 .bodyToFlux(ContributorsResponse.class)
                 .map(member ->
-                {BlogMember blogMember = new BlogMember(user,blogId);
+                {BlogMember blogMember = new BlogMember(user,blog);
                     return blogMemberRepository.save(blogMember);})
                 .collectList()
                 .block();

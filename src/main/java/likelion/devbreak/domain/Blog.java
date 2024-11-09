@@ -13,6 +13,8 @@ import java.util.Set;
 
 @Entity
 @Getter @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @EntityListeners(BlogListener.class)
 public class Blog{
     @Id
@@ -49,10 +51,6 @@ public class Blog{
     public void updateBlog(UpdateBlogData data){
         this.blogName = data.getBlogName();
         this.description = data.getDescription();
-    }
-
-    public Blog(){
-
     }
 
 }

@@ -44,7 +44,7 @@ public class OAuthLoginService {
 	}
 
 	private Long findOrCreateMember(InfoResponse infoResponse) {
-		return userRepository.findByUsername(infoResponse.getUsername())
+		return userRepository.findByUserName(infoResponse.getUsername())
 			.map(User::getId)
 			.orElseGet(() -> newMember(infoResponse));
 	}
