@@ -131,7 +131,6 @@ public class ArticleService {
         return articleResponse;
     }
 
-
     // 글 전체 조회
     public List<ArticleListResponse> getAllArticles(CustomUserDetails customUserDetails) {
         List<Article> articles = articleRepository.findAllByOrderByCreatedAtDesc();
