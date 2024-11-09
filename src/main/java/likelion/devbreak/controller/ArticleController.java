@@ -87,7 +87,7 @@ public class ArticleController {
         }
     }
 
-    // 15개 최신순으로 글 불러오기 (Page 이용)
+    // 글 전체 조회
     @GetMapping("/breakthrough")
     public ResponseEntity<?> get15ArticlesList(
             @AuthenticationPrincipal CustomUserDetails customUserDetails
