@@ -89,7 +89,7 @@ public class ArticleController {
 
     // 글 전체 조회
     @GetMapping("/breakthrough")
-    public ResponseEntity<?> get15ArticlesList(
+    public ResponseEntity<?> getArticlesList(
             @AuthenticationPrincipal CustomUserDetails customUserDetails
     ) {
         try {

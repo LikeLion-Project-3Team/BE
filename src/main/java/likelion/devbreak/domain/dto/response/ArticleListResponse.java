@@ -17,10 +17,10 @@ public class ArticleListResponse {
     private String createdAt;
 
     public ArticleListResponse(Article article) {
-        this.articleId = getArticleId();
-        this.blogId = getBlogId();
-        this.title = getTitle();
-        this.blogName = getBlogName();
+        this.articleId = article.getId();
+        this.blogId = article.getBlog().getId();
+        this.title = article.getTitle();
+        this.blogName = article.getBlog().getBlogName();
         this.createdAt = article.getCreatedAt() != null ? article.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd")) : null;
     }
 }
