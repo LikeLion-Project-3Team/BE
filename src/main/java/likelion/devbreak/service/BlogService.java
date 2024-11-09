@@ -5,10 +5,7 @@ import likelion.devbreak.domain.BlogMember;
 import likelion.devbreak.domain.Favorites;
 import likelion.devbreak.domain.User;
 import likelion.devbreak.domain.dto.request.UpdateBlogRequest;
-import likelion.devbreak.domain.dto.response.BlogEventResponse;
-import likelion.devbreak.domain.dto.response.BlogResponse;
-import likelion.devbreak.domain.dto.response.BreakThrough;
-import likelion.devbreak.domain.dto.response.GetBlogResponse;
+import likelion.devbreak.domain.dto.response.*;
 import likelion.devbreak.dto.UpdateBlogData;
 import likelion.devbreak.oAuth.domain.CustomUserDetails;
 import likelion.devbreak.oAuth.domain.github.GitHubClient;
@@ -19,7 +16,6 @@ import likelion.devbreak.repository.FavoritesRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.webjars.NotFoundException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -58,14 +54,14 @@ public class BlogService {
     public List<BlogEventResponse> getAllBlogEvents(CustomUserDetails customUserDetails) {
         User user = globalService.findUser(customUserDetails);
 
-        List<Long> blogIdList = user.getBlogMembers()
+        List<Blog> blogIdList = user.getBlogMembers()
                 .stream()
-                .map(BlogMember::getBlogId)
+                .map(BlogMember::getBlog)
                 .collect(Collectors.toList());
 
-        return getUserBlog(blogIdList)
+        return blogIdList
                 .stream()
-                .map(BlogEventResponse::new)
+                .map(blog -> new BlogEventResponse(blog.getId(), blog.getBlogName(), blog.getDescription(), blog.getGitRepoUrl()))
                 .collect(Collectors.toList());
     }
 
@@ -73,9 +69,9 @@ public class BlogService {
 
     public GetBlogResponse getBlog(CustomUserDetails customUserDetails, Long blogId) {
         globalService.findUser(customUserDetails);
-        Blog blog = findBlogById(blogId);
+        Blog blog = globalService.findBlogById(blogId);
 
-        Boolean isFavorited = favoritesRepository.findByUserIAndBlogId(customUserDetails.getId(), blogId)
+        Boolean isFavorited = favoritesRepository.findByUserIdAndBlogId(customUserDetails.getId(), blogId)
                 .map(Favorites::getIsFavorited)
                 .orElse(false);
 
@@ -88,15 +84,15 @@ public class BlogService {
     // 블로그 수정 관련 서비스
     public GetBlogResponse updateBlog(CustomUserDetails customUserDetails, Long blogId, UpdateBlogRequest request){
         User user = globalService.findUser(customUserDetails);
-        Blog blog = findBlogById(blogId);
+        Blog blog = globalService.findBlogById(blogId);
 
-        user.getBlogMembers().stream().map(BlogMember::getBlogId).filter(id -> id.equals(blogId))
+        user.getBlogMembers().stream().map(BlogMember::getBlog).filter(bm -> bm.getId().equals(blogId))
                 .findFirst().orElseThrow(() -> new RuntimeException("수정 권한이 없습니다."));
 
         blog.updateBlog(UpdateBlogData.createWith(request));
         blogRepository.save(blog);
 
-        Boolean isFavorited = favoritesRepository.findByUserIAndBlogId(customUserDetails.getId(), blogId)
+        Boolean isFavorited = favoritesRepository.findByUserIdAndBlogId(customUserDetails.getId(), blogId)
                 .map(Favorites::getIsFavorited)
                 .orElse(false);
 
@@ -110,9 +106,9 @@ public class BlogService {
     //즐겨찾기 기능
     public GetBlogResponse favoriteToggle(CustomUserDetails customUserDetails, Long blogId) {
         User user = globalService.findUser(customUserDetails);
-        Blog blog = findBlogById(blogId);
+        Blog blog = globalService.findBlogById(blogId);
 
-        Favorites favorite = favoritesRepository.findByUserIAndBlogId(user.getId(), blogId)
+        Favorites favorite = favoritesRepository.findByUserIdAndBlogId(user.getId(), blogId)
                 .orElseGet(() -> new Favorites(false, user, blog));
 
         favorite.setIsFavorited(!favorite.getIsFavorited());
@@ -130,25 +126,15 @@ public class BlogService {
     @Transactional
     public void deleteBlog(CustomUserDetails customUserDetails, Long blogId){
         User user = globalService.findUser(customUserDetails);
-        Blog blog = findBlogById(blogId);
+        Blog blog = globalService.findBlogById(blogId);
 
-        user.getBlogMembers().stream().map(BlogMember::getBlogId).filter(id -> id.equals(blogId))
-                .findFirst().orElseThrow(() -> new RuntimeException("삭제 권한이 없습니다."));
+        if(blog.getUser().getId() != user.getId()){
+            throw new RuntimeException("삭제 권한이 없습니다.");
+        }
 
         blogRepository.deleteById(blogId);
     }
 
-
-    //유저의 모든 블로그 목록 조회
-    public List<Blog> getUserBlog(List<Long> blogIds) {
-        return blogRepository.findAllById(blogIds);
-    }
-
-    //블로그 id로 특정 블로그 조회
-    public Blog findBlogById(final Long blogId) {
-        return blogRepository.findById(blogId)
-                .orElseThrow(()->new NotFoundException("블로그를 발견하지 못하였습니다."));
-    }
 
     //breakThrough 목록 조회
     public List<BreakThrough> getArticles(Long blogId){
@@ -159,18 +145,18 @@ public class BlogService {
     }
 
     //즐겨찾기 상위 10개 블로그 반환
-    public List<BlogEventResponse> getTopFavBlogs() {
+    public List<BlogListResponse> getTopFavBlogs() {
         return blogRepository.findTop10ByOrderByFavCountDesc().stream()
-                .map(blog -> new BlogEventResponse(blog))
+                .map(blog -> new BlogListResponse(blog))
                 .collect(Collectors.toList());
     }
 
     //유저가 즐겨찾기한 블로그 모음
-    public List<BlogEventResponse> getFavBlogs(CustomUserDetails customUserDetails) {
+    public List<BlogListResponse> getFavBlogs(CustomUserDetails customUserDetails) {
         User user = globalService.findUser(customUserDetails);
 
         return favoritesRepository.findByUserIdAndIsFavoritedTrue(user.getId()).stream()
-                .map(favorites -> BlogEventResponse.createWithBlogList(favorites.getBlog()))
+                .map(favorites -> BlogListResponse.createWithBlogList(favorites.getBlog()))
                 .collect(Collectors.toList());
     }
 }

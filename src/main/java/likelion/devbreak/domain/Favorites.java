@@ -28,4 +28,5 @@ public class Favorites {
         this.user = user;
         this.blog = blog;
     }
+
 }
