@@ -133,12 +133,12 @@ public class ArticleService {
 
     // 글 전체 조회
     public List<ArticleListResponse> getAllArticles(CustomUserDetails customUserDetails) {
+        globalService.findUser(customUserDetails);
         List<Article> articles = articleRepository.findAllByOrderByCreatedAtDesc();
 
         return articles.stream()
                 .map(ArticleListResponse::new)
                 .collect(Collectors.toList());
-
     }
 
 }
