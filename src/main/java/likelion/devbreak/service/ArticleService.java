@@ -1,18 +1,21 @@
 package likelion.devbreak.service;
 
-import likelion.devbreak.domain.*;
+import likelion.devbreak.domain.Article;
+import likelion.devbreak.domain.Blog;
+import likelion.devbreak.domain.Likes;
+import likelion.devbreak.domain.User;
 import likelion.devbreak.domain.dto.request.ArticleRequest;
+import likelion.devbreak.domain.dto.response.ArticleListResponse;
 import likelion.devbreak.domain.dto.response.ArticleResponse;
 import likelion.devbreak.oAuth.domain.CustomUserDetails;
 import likelion.devbreak.repository.ArticleRepository;
 import likelion.devbreak.repository.BlogRepository;
-import likelion.devbreak.repository.UserRepository;
 import likelion.devbreak.repository.LikesRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import likelion.devbreak.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.webjars.NotFoundException;
-
-import java.time.LocalDateTime;
 
 @Service
 public class ArticleService {
@@ -126,4 +129,14 @@ public class ArticleService {
                 article.getUpdatedAt());
         return articleResponse;
     }
+
+
+    // 한 페이지당 15개글 조회 - Page 반환타입 사용해봤는데 에러가 뜨면 추후에 List로 바꿔,,,볼게요..
+    public Page<ArticleListResponse> getAllArticles(int page) {
+        PageRequest pageRequest = PageRequest.of(page, 15);
+
+        return articleRepository.findAllByOrderByCreatedAtDesc(pageRequest)
+                .map(ArticleListResponse::new);
+    }
+
 }

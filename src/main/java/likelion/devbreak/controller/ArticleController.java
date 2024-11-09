@@ -1,10 +1,12 @@
 package likelion.devbreak.controller;
 
 import likelion.devbreak.domain.dto.request.ArticleRequest;
+import likelion.devbreak.domain.dto.response.ArticleListResponse;
 import likelion.devbreak.domain.dto.response.ArticleResponse;
 import likelion.devbreak.oAuth.domain.CustomUserDetails;
 import likelion.devbreak.service.ArticleService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -79,6 +81,20 @@ public class ArticleController {
         try {
             ArticleResponse articleResponse = articleService.toggleLike(articleId, customUserDetails);
             return ResponseEntity.ok().body(articleResponse);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    // 15개 최신순으로 글 불러오기 (Page 이용)
+    @GetMapping("/breakthrough")
+    public ResponseEntity<?> get15ArticlesList(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            @RequestParam(value = "page", defaultValue = "1") int page
+    ) {
+        try {
+            Page<ArticleListResponse> response = articleService.getAllArticles(page-1);
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
