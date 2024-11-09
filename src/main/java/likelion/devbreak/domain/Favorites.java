@@ -1,19 +1,20 @@
 package likelion.devbreak.domain;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Getter @Setter
+@NoArgsConstructor
 public class Favorites {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Boolean isFavorited;
+    private Boolean isFavorited = false;
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

@@ -2,12 +2,12 @@ package likelion.devbreak.domain;
 
 import jakarta.persistence.*;
 import likelion.devbreak.dto.UpdateBlogData;
-import likelion.devbreak.listener.ArticleListener;
 import likelion.devbreak.listener.BlogListener;
-import lombok.*;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Set;
 
 
@@ -30,6 +30,8 @@ public class Blog{
     private LocalDateTime createdAt;
     @Setter
     private LocalDateTime updatedAt;
+    @Setter
+    private Boolean isFavorited = false;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
