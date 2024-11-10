@@ -10,4 +10,7 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
 
     // 최신순으로 정렬
     List<Article> findAllByOrderByCreatedAtDesc();
+
+    // 좋아요 순으로 상위 10개만 조회
+    List<Article> findTop10ByOrderByLikeCountDesc();
 }
