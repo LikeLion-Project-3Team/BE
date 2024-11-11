@@ -92,7 +92,7 @@ public class BlogController {
 
 
     //즐겨찾기 상위 10개 블로그 반환
-    @GetMapping("/home/top_fav_blogs")
+    @GetMapping("/home/blog")
     public ResponseEntity<?> getTopFavBlogs() {
         try {
             List<BlogListResponse> response = blogService.getTopFavBlogs();
