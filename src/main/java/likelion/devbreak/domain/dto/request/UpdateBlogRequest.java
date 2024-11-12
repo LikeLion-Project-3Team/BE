@@ -1,18 +1,10 @@
 package likelion.devbreak.domain.dto.request;
 
-import likelion.devbreak.domain.Article;
-import likelion.devbreak.domain.User;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
-
-import java.util.List;
+import lombok.Setter;
 
 @Getter
-@ToString
-@AllArgsConstructor
-@NoArgsConstructor
+@Setter
 public class UpdateBlogRequest {
     private String blogName;
     private String description;
