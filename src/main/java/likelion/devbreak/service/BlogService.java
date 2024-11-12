@@ -16,6 +16,7 @@ import likelion.devbreak.repository.FavoritesRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -35,7 +36,8 @@ public class BlogService {
 
     public BlogResponse addBlog(CustomUserDetails customUserDetails, UpdateBlogRequest request) {
         User user = globalService.findUser(customUserDetails);
-        blogRepository.findByGitRepoUrl(request.getGitRepoUrl()).orElseThrow(() -> new RuntimeException("이미 해당 레포지토리의 블로그가 존재합니다."));
+        blogRepository.findByGitRepoUrl(request.getGitRepoUrl())
+                .ifPresent(blog -> { throw new RuntimeException("이미 해당 레포지토리의 블로그가 존재합니다."); });
 
         Blog blog = Blog.builder()
                 .user(user)
@@ -45,7 +47,7 @@ public class BlogService {
                 .favCount(0)
                 .build();
         blogRepository.save(blog);
-        List<BlogMember> members = gitHubClient.getContributors(customUserDetails, blog.getGitRepoUrl(), blog.getId());
+        Mono<List<BlogMember>> members = gitHubClient.getContributors(customUserDetails, blog.getGitRepoUrl(), blog.getId());
 
         return BlogResponse.createWith(blog, members);
     }
@@ -54,7 +56,7 @@ public class BlogService {
     public List<BlogEventResponse> getAllBlogEvents(CustomUserDetails customUserDetails) {
         User user = globalService.findUser(customUserDetails);
 
-        List<Blog> blogIdList = user.getBlogMembers()
+        List<Blog> blogIdList = blogMemberRepository.findBlogMemberByUserName(user.getUserName())
                 .stream()
                 .map(BlogMember::getBlog)
                 .collect(Collectors.toList());
@@ -86,7 +88,7 @@ public class BlogService {
         User user = globalService.findUser(customUserDetails);
         Blog blog = globalService.findBlogById(blogId);
 
-        user.getBlogMembers().stream().map(BlogMember::getBlog).filter(bm -> bm.getId().equals(blogId))
+        blogMemberRepository.findBlogMemberByUserName(user.getUserName()).stream().map(BlogMember::getBlog).filter(bm -> bm.getId().equals(blogId))
                 .findFirst().orElseThrow(() -> new RuntimeException("수정 권한이 없습니다."));
 
         blog.updateBlog(UpdateBlogData.createWith(request));

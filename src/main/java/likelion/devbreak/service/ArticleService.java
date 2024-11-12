@@ -1,9 +1,6 @@
 package likelion.devbreak.service;
 
-import likelion.devbreak.domain.Article;
-import likelion.devbreak.domain.Blog;
-import likelion.devbreak.domain.Likes;
-import likelion.devbreak.domain.User;
+import likelion.devbreak.domain.*;
 import likelion.devbreak.domain.dto.request.ArticleRequest;
 import likelion.devbreak.domain.dto.response.ArticleListResponse;
 import likelion.devbreak.domain.dto.response.ArticleResponse;
@@ -60,7 +57,7 @@ public class ArticleService {
         Article article = globalService.findArticleById(articleId);
 
         Likes like = likesRepository.findByUserIdAndArticleId(user.getId(), articleId)
-                .orElseThrow(()->new NotFoundException("좋아요 여부를 알 수 없습니다."));
+                .orElseGet(() -> new Likes(false, user, article));
 
         return toArticleResponse(article, like);
     }
@@ -104,7 +101,7 @@ public class ArticleService {
         Article article = globalService.findArticleById(articleId);
 
         Likes like = likesRepository.findByUserIdAndArticleId(user.getId(), articleId)
-                .orElseThrow(()->new NotFoundException("좋아요 여부를 알 수 없습니다."));
+                .orElseGet(() -> new Likes(false, user, article));
         like.setIsLiked(!like.getIsLiked());
 
         article.setLikeCount(article.getLikeCount() + (like.getIsLiked() ? 1 : -1));

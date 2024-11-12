@@ -8,6 +8,7 @@ import likelion.devbreak.domain.User;
 import likelion.devbreak.dto.ResponseDto;
 import lombok.Builder;
 import lombok.Getter;
+import reactor.core.publisher.Mono;
 
 import java.lang.reflect.Member;
 import java.time.LocalDateTime;
@@ -23,18 +24,18 @@ public class BlogResponse implements ResponseDto {
     private String blogName;
     private String description;
     private String gitRepoUrl;
-    private List<BlogMember> members;
+    private Mono<List<BlogMember>> members;
     private int favCount;
     private Boolean favButton;
     private String createdAt;
 
-    public static BlogResponse createWith(Blog blog, List<BlogMember> members) {
+    public static BlogResponse createWith(Blog blog, Mono<List<BlogMember>> members) {
         DateTimeFormatter stringDate = DateTimeFormatter.ofPattern("yyyy.MM.dd");
         String formattedCreatedAt = blog.getCreatedAt().format(stringDate);
 
         return BlogResponse.builder()
                 .blogId(blog.getId())
-                .userId(blog.getId())
+                .userId(blog.getUser().getId())
                 .blogName(blog.getBlogName())
                 .description(blog.getDescription())
                 .gitRepoUrl(blog.getGitRepoUrl())
