@@ -29,9 +29,6 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     public Set<Favorites> favorites;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    public Set<BlogMember> blogMembers;
-
     @Builder
     public User(String username){
         this.userName = username;

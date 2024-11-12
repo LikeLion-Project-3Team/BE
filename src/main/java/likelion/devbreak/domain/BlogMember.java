@@ -12,18 +12,15 @@ public class BlogMember {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "blogMember_id")
     private Long id;
-
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private String userName;
 
     @ManyToOne
     @JoinColumn(name = "blog_id", nullable = false)
     private Blog blog;
 
 
-    public BlogMember(User user,Blog blog){
-        this.user = user;
+    public BlogMember(String userName,Blog blog){
+        this.userName = userName;
         this.blog = blog;
     }
     public BlogMember(){

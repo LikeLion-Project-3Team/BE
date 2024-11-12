@@ -12,6 +12,7 @@ import java.util.List;
 @Getter
 @ToString
 @AllArgsConstructor
+@NoArgsConstructor
 public class UpdateBlogRequest {
     private String blogName;
     private String description;
