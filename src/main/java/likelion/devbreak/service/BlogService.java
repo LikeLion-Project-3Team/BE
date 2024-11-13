@@ -55,15 +55,10 @@ public class BlogService {
     //블로그 목록 불러오기
     public List<BlogEventResponse> getAllBlogEvents(CustomUserDetails customUserDetails) {
         User user = globalService.findUser(customUserDetails);
+        List<Blog> blogList = blogRepository.findAllByUserId(user.getId());
 
-        List<Blog> blogIdList = blogMemberRepository.findBlogMemberByUserName(user.getUserName())
-                .stream()
-                .map(BlogMember::getBlog)
-                .collect(Collectors.toList());
-
-        return blogIdList
-                .stream()
-                .map(blog -> new BlogEventResponse(blog.getId(), blog.getBlogName(), blog.getDescription(), blog.getGitRepoUrl()))
+        return blogList.stream()
+                .map(BlogEventResponse::new)
                 .collect(Collectors.toList());
     }
 
@@ -88,8 +83,9 @@ public class BlogService {
         User user = globalService.findUser(customUserDetails);
         Blog blog = globalService.findBlogById(blogId);
 
-        blogMemberRepository.findBlogMemberByUserName(user.getUserName()).stream().map(BlogMember::getBlog).filter(bm -> bm.getId().equals(blogId))
-                .findFirst().orElseThrow(() -> new RuntimeException("수정 권한이 없습니다."));
+        if(blog.getUser().getId() != user.getId()) {
+            throw new IllegalArgumentException("수정 권한이 없습니다.");
+        }
 
         blog.updateBlog(UpdateBlogData.createWith(request));
         blogRepository.save(blog);

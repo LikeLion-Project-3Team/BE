@@ -36,11 +36,13 @@ public class BlogController {
 
     // 사용자의 모든 블로그 조회
     @GetMapping("/blog")
-    public ResponseEntity<?> findAllBlogs(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+    public ResponseEntity<?> findAllBlogs(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails
+    ) {
         log.info("Request to GET all blogs");
         try {
-            List<BlogEventResponse> blogs = blogService.getAllBlogEvents(customUserDetails);
-            return ResponseEntity.ok(blogs);
+            List<BlogEventResponse> response = blogService.getAllBlogEvents(customUserDetails);
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }

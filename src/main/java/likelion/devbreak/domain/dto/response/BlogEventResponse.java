@@ -1,29 +1,27 @@
 package likelion.devbreak.domain.dto.response;
 
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import likelion.devbreak.dto.ResponseDto;
-import lombok.Builder;
+import likelion.devbreak.domain.Blog;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.format.DateTimeFormatter;
 
-@Getter @Setter
-@Builder
-@NoArgsConstructor
-@JsonNaming(value = PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class BlogEventResponse implements ResponseDto {
+
+@Getter
+@Setter
+public class BlogEventResponse {
     private Long blogId;
     private String blogName;
     private String description;
     private String gitRepoUrl;
+    private String createdAt;
 
-    public BlogEventResponse(Long blogId, String blogName, String description, String gitRepoUrl) {
-        this.blogId = blogId;
-        this.blogName = blogName;
-        this.description = description;
-        this.gitRepoUrl = gitRepoUrl;
+    public BlogEventResponse(Blog blog) {
+        this.blogId = blog.getId();
+        this.blogName = blog.getBlogName();
+        this.description = blog.getDescription();
+        this.gitRepoUrl = blog.getGitRepoUrl();
+        this.createdAt = blog.getCreatedAt() != null ? blog.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd")) : null;
     }
 
 }

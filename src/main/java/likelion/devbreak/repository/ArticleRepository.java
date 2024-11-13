@@ -8,7 +8,7 @@ import java.util.List;
 public interface ArticleRepository extends JpaRepository<Article, Long> {
     List<Article> findArticleByBlog_Id(Long blogId);
 
-    // 최신순으로 정렬
+    //글 최신순으로 정렬
     List<Article> findAllByOrderByCreatedAtDesc();
 
     // 좋아요 순으로 상위 10개만 조회

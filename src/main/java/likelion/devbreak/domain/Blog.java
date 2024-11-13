@@ -11,6 +11,7 @@ import java.util.Set;
 
 @Entity
 @Getter @Builder
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @EntityListeners(BlogListener.class)
