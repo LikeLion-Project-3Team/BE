@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/article")
+@RequestMapping("/api")
 @CrossOrigin("*")
 @RequiredArgsConstructor
 public class ArticleController {
@@ -22,7 +22,7 @@ public class ArticleController {
     private final ArticleService articleService;
 
     // 글 생성
-    @PostMapping
+    @PostMapping("/article")
     public ResponseEntity<?> createArticle(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             @RequestBody ArticleRequest articleRequest) {
@@ -35,7 +35,7 @@ public class ArticleController {
     }
 
     // 특정 글 조회
-    @GetMapping("/{articleId}")
+    @GetMapping("article/{articleId}")
     public ResponseEntity<?> getArticle(
             @PathVariable Long articleId,
             @AuthenticationPrincipal CustomUserDetails customUserDetails) {
@@ -48,7 +48,7 @@ public class ArticleController {
     }
 
     // 글 수정
-    @PutMapping("/{articleId}")
+    @PutMapping("article/{articleId}")
     public ResponseEntity<?> updateArticle(
             @PathVariable Long articleId,
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
@@ -62,7 +62,7 @@ public class ArticleController {
     }
 
     // 글 삭제
-    @DeleteMapping("/{articleId}")
+    @DeleteMapping("article/{articleId}")
     public ResponseEntity<?> deleteArticle(
             @PathVariable Long articleId,
             @AuthenticationPrincipal CustomUserDetails customUserDetails){
@@ -75,7 +75,7 @@ public class ArticleController {
     }
 
     // 좋아요 및 좋아요 취소
-    @PutMapping("/{articleId}/like")
+    @PutMapping("article/{articleId}/like")
     public ResponseEntity<?> likeToggle(
             @PathVariable Long articleId,
             @AuthenticationPrincipal CustomUserDetails customUserDetails) {
@@ -88,7 +88,7 @@ public class ArticleController {
     }
 
     // 글 전체 조회
-    @GetMapping("/breakthrough")
+    @GetMapping("article/breakthrough")
     public ResponseEntity<?> getArticlesList(
             @AuthenticationPrincipal CustomUserDetails customUserDetails
     ) {

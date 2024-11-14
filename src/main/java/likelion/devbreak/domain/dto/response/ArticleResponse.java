@@ -20,11 +20,14 @@ public class ArticleResponse {
     private String blogName;
     private String content;
     private int likeCount;
+    private String about;
+    private String problem;
+    private String solution;
     private Boolean likeButton;
     private String createdAt;
     private String updatedAt;
 
-    public ArticleResponse(Long articleId, Long blogId,Long userId, String title, String blogName, String content, int likeCount, Boolean likeButton, LocalDateTime createdAt, LocalDateTime updatedAt){
+    public ArticleResponse(Long articleId, Long blogId,Long userId, String title, String blogName, String content, int likeCount,String about, String problem, String solution, Boolean likeButton, LocalDateTime createdAt, LocalDateTime updatedAt){
         this.articleId = articleId;
         this.blogId = blogId;
         this.userId = userId;
@@ -32,6 +35,9 @@ public class ArticleResponse {
         this.blogName = blogName;
         this.content = content;
         this.likeCount = likeCount;
+        this.about = about;
+        this.problem = problem;
+        this.solution = solution;
         this.likeButton = likeButton;
         this.createdAt = createdAt != null ? createdAt.format(DateTimeFormatter.ofPattern("yyyy.MM.dd")) : null;
         this.updatedAt = updatedAt != null ? updatedAt.format(DateTimeFormatter.ofPattern("yyyy.MM.dd")) : null;

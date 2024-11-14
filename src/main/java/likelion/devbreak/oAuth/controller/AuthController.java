@@ -4,6 +4,7 @@ import likelion.devbreak.domain.User;
 import likelion.devbreak.oAuth.domain.AuthTokens;
 import likelion.devbreak.oAuth.domain.CustomUserDetails;
 import likelion.devbreak.oAuth.domain.RefreshTokenRequest;
+import likelion.devbreak.oAuth.domain.dto.response.NameResponse;
 import likelion.devbreak.oAuth.domain.github.LoginParams;
 import likelion.devbreak.oAuth.service.OAuthLoginService;
 import lombok.RequiredArgsConstructor;
@@ -58,9 +59,7 @@ public class AuthController {
 
     @GetMapping("/info")
     public ResponseEntity<?> getInfo(@AuthenticationPrincipal CustomUserDetails user) {
-        User info = oAuthLoginService.getInfo(user.getId());
+        NameResponse info = oAuthLoginService.getInfo(user.getId());
         return ResponseEntity.ok(info);
     }
-
-
 }

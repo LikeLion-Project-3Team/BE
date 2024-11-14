@@ -15,12 +15,14 @@ public class ArticleListResponse {
     private String title;
     private String blogName;
     private String createdAt;
+    private int likeCount;
 
     public ArticleListResponse(Article article) {
         this.articleId = article.getId();
         this.blogId = article.getBlog().getId();
         this.title = article.getTitle();
         this.blogName = article.getBlog().getBlogName();
+        this.likeCount = article.getLikeCount();
         this.createdAt = article.getCreatedAt() != null ? article.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd")) : null;
     }
 }

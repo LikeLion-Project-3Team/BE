@@ -10,6 +10,7 @@ import lombok.Getter;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Builder
@@ -19,14 +20,14 @@ public class GetBlogResponse implements ResponseDto {
     private String blogName;
     private String description;
     private String gitRepoUrl;
-    private List<BlogMember> members;
+    private Set<String> members;
     private int favCount;
     private Boolean favButton;
     private String createdAt;
     private List<BreakThrough> breakThroughs;
 
 
-    public static GetBlogResponse createWith(Blog blog, List<BlogMember> memberList, List<BreakThrough> breakThroughs, Boolean isFavorited){
+    public static GetBlogResponse createWith(Blog blog, Set<String> memberList, List<BreakThrough> breakThroughs, Boolean isFavorited){
         DateTimeFormatter stringDate = DateTimeFormatter.ofPattern("yyyy.MM.dd");
         String formattedCreatedAt = blog.getCreatedAt().format(stringDate);
 

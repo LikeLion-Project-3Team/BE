@@ -14,6 +14,7 @@ import java.lang.reflect.Member;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Builder
@@ -24,12 +25,12 @@ public class BlogResponse implements ResponseDto {
     private String blogName;
     private String description;
     private String gitRepoUrl;
-    private Mono<List<BlogMember>> members;
+    private Set<String> members;
     private int favCount;
     private Boolean favButton;
     private String createdAt;
 
-    public static BlogResponse createWith(Blog blog, Mono<List<BlogMember>> members) {
+    public static BlogResponse createWith(Blog blog, Set<String> members) {
         DateTimeFormatter stringDate = DateTimeFormatter.ofPattern("yyyy.MM.dd");
         String formattedCreatedAt = blog.getCreatedAt().format(stringDate);
 

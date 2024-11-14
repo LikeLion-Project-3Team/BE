@@ -17,7 +17,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Component
@@ -51,10 +54,10 @@ public class GitHubClient {
                 .bodyToFlux(RepoResponse.class);
     }
 
-    public Flux<IssueResponse> getIssues(CustomUserDetails customUserDetails, RepoResponse repoResponse) {
+    public Flux<IssueResponse> getIssues(CustomUserDetails customUserDetails, String htmlUrl) {
         User user = globalService.findUser(customUserDetails);
-        String repoUrl = repoResponse.getHtml_url();
-        String[] parts = repoUrl.split("/");
+        String decodedUrl = URLDecoder.decode(htmlUrl, StandardCharsets.UTF_8);
+        String[] parts = decodedUrl.split("/");
         String owner = parts[parts.length - 2];
         String repoName = parts[parts.length - 1];
         return webClient.get()
@@ -63,11 +66,11 @@ public class GitHubClient {
                 .bodyToFlux(IssueResponse.class);
     }
 
-    public Flux<CommitResponse> getCommits(CustomUserDetails customUserDetails, RepoResponse repoResponse) {
-        User user = globalService.findUser(customUserDetails);
+    public Flux<CommitResponse> getCommits(CustomUserDetails customUserDetails, String htmlUrl) {
+        globalService.findUser(customUserDetails);
 
-        String repoUrl = repoResponse.getHtml_url();
-        String[] parts = repoUrl.split("/");
+        String decodedUrl = URLDecoder.decode(htmlUrl, StandardCharsets.UTF_8);
+        String[] parts = decodedUrl.split("/");
         String owner = parts[parts.length - 2];
         String repoName = parts[parts.length - 1];
 
@@ -77,21 +80,5 @@ public class GitHubClient {
                 .bodyToFlux(CommitResponse.class);
     }
 
-    public Mono<List<BlogMember>> getContributors(CustomUserDetails customUserDetails, String gitRepoUrl, Long blogId) {
-        globalService.findUser(customUserDetails);
-        Blog blog = globalService.findBlogById(blogId);
 
-        String[] parts = gitRepoUrl.split("/");
-        String owner = parts[parts.length - 2];
-        String repoName = parts[parts.length - 1];
-
-        return webClient.get()
-                .uri("/repos/{owner}/{repo}/collaborators", owner,repoName)
-                .retrieve()
-                .bodyToFlux(ContributorsResponse.class)
-                .map(member ->
-                {BlogMember blogMember = new BlogMember(member.getLogin(),blog);
-                    return blogMemberRepository.save(blogMember);})
-                .collectList();
-    }
 }
