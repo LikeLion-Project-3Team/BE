@@ -2,6 +2,7 @@ package likelion.devbreak.oAuth.service;
 
 import likelion.devbreak.domain.User;
 import likelion.devbreak.oAuth.domain.*;
+import likelion.devbreak.oAuth.domain.dto.response.NameResponse;
 import likelion.devbreak.oAuth.domain.github.InfoResponse;
 import likelion.devbreak.oAuth.domain.github.LoginParams;
 import likelion.devbreak.oAuth.repository.RefreshTokenRepository;
@@ -57,9 +58,10 @@ public class OAuthLoginService {
 		return userRepository.save(member).getId();
 	}
 
-	public User getInfo(Long userId) {
-		return userRepository.findById(userId)
+	public NameResponse getInfo(Long userId) {
+		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+		return new NameResponse(user.getId(), user.getUserName());
 	}
 
 	public AuthTokens refresh(String refreshToken) {

@@ -9,4 +9,7 @@ public class ArticleRequest {
     private Long blogId;
     private String title;
     private String content;
+    private String about;
+    private String problem;
+    private String solution;
 }

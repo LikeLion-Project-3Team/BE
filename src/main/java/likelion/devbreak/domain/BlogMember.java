@@ -18,10 +18,14 @@ public class BlogMember {
     @JoinColumn(name = "blog_id", nullable = false)
     private Blog blog;
 
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-    public BlogMember(String userName,Blog blog){
+    public BlogMember(String userName,Blog blog, User user){
         this.userName = userName;
         this.blog = blog;
+        this.user = user;
     }
     public BlogMember(){
 

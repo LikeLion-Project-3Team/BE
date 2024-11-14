@@ -20,16 +20,12 @@ public class ArticleService {
 
     private final ArticleRepository articleRepository;
     private final LikesRepository likesRepository;
-    private final UserRepository userRepository;
-    private final BlogRepository blogRepository;
 
     private final GlobalService globalService;
 
-    public ArticleService(ArticleRepository articleRepository, LikesRepository likesRepository, UserRepository userRepository, BlogRepository blogRepository, GlobalService globalService){
+    public ArticleService(ArticleRepository articleRepository, LikesRepository likesRepository, GlobalService globalService){
         this.articleRepository = articleRepository;
         this.likesRepository = likesRepository;
-        this.userRepository = userRepository;
-        this.blogRepository = blogRepository;
         this.globalService = globalService;
     }
     public ArticleResponse createArticle(CustomUserDetails customUserDetails, ArticleRequest articleRequest) {
@@ -42,6 +38,9 @@ public class ArticleService {
         article.setTitle(articleRequest.getTitle());
         article.setContent(articleRequest.getContent());
         article.setLikeCount(0);
+        article.setAbout(articleRequest.getAbout());
+        article.setProblem(articleRequest.getProblem());
+        article.setSolution(articleRequest.getSolution());
 
         Likes likes = new Likes(false, user, article);
 
@@ -73,6 +72,9 @@ public class ArticleService {
         }
         article.setTitle(articleRequest.getTitle());
         article.setContent(articleRequest.getContent());
+        article.setAbout(articleRequest.getAbout());
+        article.setProblem(articleRequest.getProblem());
+        article.setSolution(articleRequest.getSolution());
 
         Likes like = likesRepository.findByUserIdAndArticleId(user.getId(), articleId)
                 .orElseThrow(()->new NotFoundException("좋아요 여부를 알 수 없습니다."));
@@ -122,6 +124,9 @@ public class ArticleService {
                 article.getBlog().getBlogName(),
                 article.getContent(),
                 article.getLikeCount(),
+                article.getAbout(),
+                article.getProblem(),
+                article.getSolution(),
                 like.getIsLiked(),
                 article.getCreatedAt(),
                 article.getUpdatedAt());

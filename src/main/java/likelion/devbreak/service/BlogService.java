@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,7 +28,6 @@ import java.util.stream.Collectors;
 public class BlogService {
     private final BlogRepository blogRepository;
     private final GlobalService globalService;
-    private final GitHubClient gitHubClient;
     private final BlogMemberRepository blogMemberRepository;
     private final ArticleRepository articleRepository;
     private final FavoritesRepository favoritesRepository;
@@ -47,7 +47,13 @@ public class BlogService {
                 .favCount(0)
                 .build();
         blogRepository.save(blog);
-        Mono<List<BlogMember>> members = gitHubClient.getContributors(customUserDetails, blog.getGitRepoUrl(), blog.getId());
+
+        List<BlogMember> blogMembers = request.getBlogMember().stream()
+                .map(name -> new BlogMember(name, blog, user))
+                .collect(Collectors.toList());
+
+        blogMemberRepository.saveAll(blogMembers);
+        Set<String> members = blogMembers.stream().map(member -> member.getUserName()).collect(Collectors.toSet());
 
         return BlogResponse.createWith(blog, members);
     }
@@ -72,7 +78,9 @@ public class BlogService {
                 .map(Favorites::getIsFavorited)
                 .orElse(false);
 
-        List<BlogMember> members = blogMemberRepository.findBlogMemberByBlogId(blogId);
+        Set<String> members = blogMemberRepository.findBlogMemberByBlogId(blogId)
+                .stream().map(member -> member.getUserName()).collect(Collectors.toSet());
+
         List<BreakThrough> breakThroughs = getArticles(blogId);
 
         return GetBlogResponse.createWith(blog,members,breakThroughs,isFavorited);
@@ -90,11 +98,25 @@ public class BlogService {
         blog.updateBlog(UpdateBlogData.createWith(request));
         blogRepository.save(blog);
 
+        request.getBlogMember().stream()
+                .filter(member -> !blogMemberRepository.findBlogMemberByUserNameAndBlog(member, blog).isPresent()) // 이미 존재하지 않으면
+                .map(member -> {
+                    BlogMember newBlogMember = new BlogMember(member, blog,user);
+                    return blogMemberRepository.save(newBlogMember); // 새로 생성한 BlogMember를 저장
+                })
+                .collect(Collectors.toList());
+
+        List<BlogMember> existingMembers = blogMemberRepository.findBlogMemberByBlog(blog);
+        existingMembers.stream()
+                .filter(existingMember -> !request.getBlogMember().contains(existingMember.getUserName())) // request에 없는 멤버
+                .forEach(existingMember -> blogMemberRepository.delete(existingMember));
+
         Boolean isFavorited = favoritesRepository.findByUserIdAndBlogId(customUserDetails.getId(), blogId)
                 .map(Favorites::getIsFavorited)
                 .orElse(false);
 
-        List<BlogMember> members = blogMemberRepository.findBlogMemberByBlogId(blogId);
+        Set<String> members = blogMemberRepository.findBlogMemberByBlogId(blogId)
+                .stream().map(member -> member.getUserName()).collect(Collectors.toSet());
 
         List<BreakThrough> breakThroughs = getArticles(blogId);
 
@@ -116,7 +138,9 @@ public class BlogService {
         favoritesRepository.save(favorite);
         blogRepository.save(blog);
 
-        List<BlogMember> members = blogMemberRepository.findBlogMemberByBlogId(blogId);
+        Set<String> members = blogMemberRepository.findBlogMemberByBlogId(blogId)
+                .stream().map(member -> member.getUserName()).collect(Collectors.toSet());
+
         List<BreakThrough> breakThroughs = getArticles(blogId);
 
         return GetBlogResponse.createWith(blog, members, breakThroughs, favorite.getIsFavorited());

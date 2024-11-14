@@ -26,6 +26,9 @@ public class Article {
     private String title;
     private String content;
     private int likeCount;
+    private String about;
+    private String problem;
+    private String solution;
 
     @Setter
     private LocalDateTime createdAt;

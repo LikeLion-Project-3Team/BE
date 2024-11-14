@@ -5,11 +5,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-
-@Getter
-@Setter
+@Getter @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class RepoResponse {
-    private String html_url;
+public class NameResponse {
+    private Long userId;
+    private String userName;
 }
