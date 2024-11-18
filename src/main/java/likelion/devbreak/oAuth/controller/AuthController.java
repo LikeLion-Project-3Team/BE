@@ -23,16 +23,17 @@ public class AuthController {
 
     private final OAuthLoginService oAuthLoginService;
 
-    @PostMapping("/github")
-    public ResponseEntity<?> loginGithub(@RequestBody LoginParams params) {
+    // GET 방식으로 code와 state 받기
+    @GetMapping("/github")
+    public ResponseEntity<?> githubCallback(@RequestParam(name = "code") String code) {
         try {
+            LoginParams params = new LoginParams(code);
+            // code와 state를 전달하여 토큰 발급
             return ResponseEntity.ok(oAuthLoginService.login(params));
         } catch (HttpClientErrorException e) {
-            // HTTP 요청 관련 오류
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("잘못된 요청입니다.");
         } catch (Exception e) {
-            // 기타 예외
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("로그인 처리 중 오류가 발생했습니다.");
