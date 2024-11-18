@@ -24,15 +24,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-		FilterChain filterChain) throws ServletException, IOException {
+									FilterChain filterChain) throws ServletException, IOException {
+		// OPTIONS 요청인 경우, 인증을 건너뛰고 바로 다음 필터로 넘김
+		if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+			filterChain.doFilter(request, response);
+			return;
+		}
+
 		try {
 			String token = resolveToken(request);
 			if (token != null && jwtTokenProvider.validateToken(token)) {
 				String userId = jwtTokenProvider.extractSubject(token);
 				CustomUserDetails userDetails = new CustomUserDetails(Long.valueOf(userId), userId,
-					new ArrayList<>()); // 빈 권한 목록 사용
+						new ArrayList<>()); // 빈 권한 목록 사용
 				SecurityContextHolder.getContext()
-					.setAuthentication(new JwtAuthenticationToken(userDetails, token, userDetails.getAuthorities()));
+						.setAuthentication(new JwtAuthenticationToken(userDetails, token, userDetails.getAuthorities()));
 			}
 		} catch (ExpiredJwtException e) {
 			// 토큰이 만료되었을 때 처리
@@ -56,7 +62,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		filterChain.doFilter(request, response);
 	}
 
-
 	private String resolveToken(HttpServletRequest request) {
 		String bearerToken = request.getHeader("Authorization");
 		if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
@@ -65,3 +70,4 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		return null;
 	}
 }
+

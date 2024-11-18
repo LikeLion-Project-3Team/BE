@@ -109,7 +109,7 @@ public class BlogService {
         List<BlogMember> existingMembers = blogMemberRepository.findBlogMemberByBlog(blog);
         existingMembers.stream()
                 .filter(existingMember -> !request.getBlogMember().contains(existingMember.getUserName())) // request에 없는 멤버
-                .forEach(existingMember -> blogMemberRepository.delete(existingMember));
+                .forEach(existingsMember -> blogMemberRepository.delete(existingsMember));
 
         Boolean isFavorited = favoritesRepository.findByUserIdAndBlogId(customUserDetails.getId(), blogId)
                 .map(Favorites::getIsFavorited)
