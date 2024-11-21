@@ -70,20 +70,15 @@ public class BlogService {
 
     // 특정 블로그 검색 관련 서비스
 
-    public GetBlogResponse getBlog(CustomUserDetails customUserDetails, Long blogId) {
-        globalService.findUser(customUserDetails);
+    public GetBlogResponse getBlog(Long blogId) {
         Blog blog = globalService.findBlogById(blogId);
-
-        Boolean isFavorited = favoritesRepository.findByUserIdAndBlogId(customUserDetails.getId(), blogId)
-                .map(Favorites::getIsFavorited)
-                .orElse(false);
 
         Set<String> members = blogMemberRepository.findBlogMemberByBlogId(blogId)
                 .stream().map(member -> member.getUserName()).collect(Collectors.toSet());
 
         List<BreakThrough> breakThroughs = getArticles(blogId);
 
-        return GetBlogResponse.createWith(blog,members,breakThroughs,isFavorited);
+        return GetBlogResponse.createWith(blog,members,breakThroughs,false);
     }
 
     // 블로그 수정 관련 서비스

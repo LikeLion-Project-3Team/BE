@@ -1,5 +1,6 @@
 package likelion.devbreak.oAuth.domain.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,5 +12,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RepoResponse {
-    private String html_url;
+    @JsonProperty("html_url")
+    private String htmlUrl; // camelCase로 필드 정의
 }
+

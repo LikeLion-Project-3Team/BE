@@ -32,8 +32,8 @@ public class GitHubController {
 
     //이슈 및 커밋 둘다 가져오기
     @GetMapping("/issues-and-commits")
-    public Flux<ActivityResponse> getIssuesAndCommits(@AuthenticationPrincipal CustomUserDetails customUserDetails, @RequestParam("html_url") String htmlUrl) {
-        Flux<ActivityResponse> issueResponses = gitHubClient.getIssues(customUserDetails, htmlUrl)
+    public Flux<ActivityResponse> getIssuesAndCommits(@RequestParam("html_url") String htmlUrl) {
+        Flux<ActivityResponse> issueResponses = gitHubClient.getIssues( htmlUrl)
                 .map(issue -> new ActivityResponse(
                         "Issue",
                         issue.getTitle(),
@@ -41,7 +41,7 @@ public class GitHubController {
                         issue.getDate()
                 ));
 
-        Flux<ActivityResponse> commitResponses = gitHubClient.getCommits(customUserDetails, htmlUrl)
+        Flux<ActivityResponse> commitResponses = gitHubClient.getCommits(htmlUrl)
                 .map(commit -> new ActivityResponse(
                         "Commit",
                         commit.getCommit().getMessage(),
@@ -53,14 +53,14 @@ public class GitHubController {
     }
 
     @GetMapping("/issues-and-commits/title")
-    public Flux<TitleResponse> getTitle(@AuthenticationPrincipal CustomUserDetails customUserDetails, @RequestParam("html_url") String htmlUrl) {
-        Flux<TitleResponse> issueResponses = gitHubClient.getIssues(customUserDetails, htmlUrl)
+    public Flux<TitleResponse> getTitle(@RequestParam("html_url") String htmlUrl) {
+        Flux<TitleResponse> issueResponses = gitHubClient.getIssues(htmlUrl)
                 .map(issue -> new TitleResponse(
                         "Issue",
                         issue.getTitle()
                 ));
 
-        Flux<TitleResponse> commitResponses = gitHubClient.getCommits(customUserDetails, htmlUrl)
+        Flux<TitleResponse> commitResponses = gitHubClient.getCommits(htmlUrl)
                 .map(commit -> new TitleResponse(
                         "Commit",
                         commit.getCommit().getMessage()

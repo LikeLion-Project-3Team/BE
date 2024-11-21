@@ -1,5 +1,7 @@
 package likelion.devbreak.oAuth.service;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import likelion.devbreak.domain.User;
 import likelion.devbreak.oAuth.domain.*;
 import likelion.devbreak.oAuth.domain.dto.response.NameResponse;
@@ -11,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.Optional;
 
@@ -24,7 +27,7 @@ public class OAuthLoginService {
 	private final RefreshTokenRepository refreshTokenRepository;
 
 	@Transactional
-	public AuthTokens login(LoginParams params) {
+	public AuthTokens login(LoginParams params, HttpServletResponse response) throws IOException {
 		InfoResponse infoResponse = requestOAuthInfoService.request(params);
 		Long userId = findOrCreateMember(infoResponse);
 
@@ -41,7 +44,23 @@ public class OAuthLoginService {
 			refreshTokenEntity.setUserId(userId);
 			refreshTokenRepository.save(refreshTokenEntity);
 		}
+
+//		Cookie accessCookie = createCookie("accessToken", authTokens.getAccessToken());
+//		Cookie refreshCookie = createCookie("refreshToken", authTokens.getRefreshToken());
+//		response.addCookie(accessCookie);
+//		response.addCookie(refreshCookie);
+//		response.sendRedirect("http://localhost:5173/");
+		response.sendRedirect("http://localhost:5173?"+"accessToken="+authTokens.getAccessToken()+"&refreshToken="+authTokens.getRefreshToken());
 		return authTokens;
+	}
+
+	private Cookie createCookie(String name, String content){
+		Integer hour = 10; // 쿠키 보존 시간
+		Cookie newCookie = new Cookie(name, content);
+		newCookie.setMaxAge(60*60*60*hour);
+		newCookie.setPath("/");
+		newCookie.setHttpOnly(true);
+		return newCookie;
 	}
 
 	private Long findOrCreateMember(InfoResponse infoResponse) {

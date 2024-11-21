@@ -49,12 +49,11 @@ public class BlogController {
     }
 
     // 특정 블로그 조회
-    @GetMapping("/blog/{blogId}")
+    @GetMapping("/blog/non-member/{blogId}")
     public ResponseEntity<ResponseDto> getBlog(
-            @AuthenticationPrincipal CustomUserDetails customUserDetails,
             @PathVariable("blogId") Long blogId) {
         log.info("Request to GET a Blog");
-        GetBlogResponse response = blogService.getBlog(customUserDetails, blogId);
+        GetBlogResponse response = blogService.getBlog(blogId);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

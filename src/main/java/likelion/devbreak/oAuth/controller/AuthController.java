@@ -1,5 +1,6 @@
 package likelion.devbreak.oAuth.controller;
 
+import jakarta.servlet.http.HttpServletResponse;
 import likelion.devbreak.domain.User;
 import likelion.devbreak.oAuth.domain.AuthTokens;
 import likelion.devbreak.oAuth.domain.CustomUserDetails;
@@ -25,11 +26,11 @@ public class AuthController {
 
     // GET 방식으로 code와 state 받기
     @GetMapping("/github")
-    public ResponseEntity<?> githubCallback(@RequestParam(name = "code") String code) {
+    public ResponseEntity<?> githubCallback(@RequestParam(name = "code") String code, HttpServletResponse response) {
         try {
             LoginParams params = new LoginParams(code);
             // code와 state를 전달하여 토큰 발급
-            return ResponseEntity.ok(oAuthLoginService.login(params));
+            return ResponseEntity.ok(oAuthLoginService.login(params, response));
         } catch (HttpClientErrorException e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("잘못된 요청입니다.");

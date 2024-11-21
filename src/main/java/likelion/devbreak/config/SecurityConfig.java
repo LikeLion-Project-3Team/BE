@@ -28,6 +28,10 @@ public class SecurityConfig {
                         sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
+                                .requestMatchers("/api/home/blog","/api/home/article").permitAll()
+                                .requestMatchers("/api/article/breakthrough/**").permitAll()
+                                .requestMatchers("/api/blog/non-member").permitAll()
+                                .requestMatchers("/api/issues-and-commits").permitAll()
                                 .anyRequest().permitAll()) // 그 외 요청은 인증 필요
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
 
