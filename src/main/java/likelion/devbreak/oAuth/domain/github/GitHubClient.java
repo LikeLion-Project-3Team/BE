@@ -54,8 +54,7 @@ public class GitHubClient {
                 .bodyToFlux(RepoResponse.class);
     }
 
-    public Flux<IssueResponse> getIssues(CustomUserDetails customUserDetails, String htmlUrl) {
-        User user = globalService.findUser(customUserDetails);
+    public Flux<IssueResponse> getIssues(String htmlUrl) {
         String decodedUrl = URLDecoder.decode(htmlUrl, StandardCharsets.UTF_8);
         String[] parts = decodedUrl.split("/");
         String owner = parts[parts.length - 2];
@@ -66,8 +65,7 @@ public class GitHubClient {
                 .bodyToFlux(IssueResponse.class);
     }
 
-    public Flux<CommitResponse> getCommits(CustomUserDetails customUserDetails, String htmlUrl) {
-        globalService.findUser(customUserDetails);
+    public Flux<CommitResponse> getCommits(String htmlUrl) {
 
         String decodedUrl = URLDecoder.decode(htmlUrl, StandardCharsets.UTF_8);
         String[] parts = decodedUrl.split("/");

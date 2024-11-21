@@ -51,14 +51,10 @@ public class ArticleService {
     }
 
     // 특정 글 조회
-    public ArticleResponse getArticleById(Long articleId, CustomUserDetails customUserDetails) {
-        User user = globalService.findUser(customUserDetails);
+    public ArticleResponse getArticleById(Long articleId) {
         Article article = globalService.findArticleById(articleId);
 
-        Likes like = likesRepository.findByUserIdAndArticleId(user.getId(), articleId)
-                .orElseGet(() -> new Likes(false, user, article));
-
-        return toArticleResponse(article, like);
+        return toArticleResponseNoLike(article);
     }
 
     // 글 수정
@@ -133,9 +129,26 @@ public class ArticleService {
         return articleResponse;
     }
 
+    private ArticleResponse toArticleResponseNoLike(Article article) {
+        ArticleResponse articleResponse = new ArticleResponse(
+                article.getId(),
+                article.getBlog().getId(),
+                article.getUser().getId(),
+                article.getTitle(),
+                article.getBlog().getBlogName(),
+                article.getContent(),
+                article.getLikeCount(),
+                article.getAbout(),
+                article.getProblem(),
+                article.getSolution(),
+                false,
+                article.getCreatedAt(),
+                article.getUpdatedAt());
+        return articleResponse;
+    }
+
     // 글 전체 조회
-    public List<ArticleListResponse> getAllArticles(CustomUserDetails customUserDetails) {
-        globalService.findUser(customUserDetails);
+    public List<ArticleListResponse> getAllArticles() {
         List<Article> articles = articleRepository.findAllByOrderByCreatedAtDesc();
 
         return articles.stream()

@@ -24,7 +24,7 @@ public class SwaggerConfig {
                 .description("API for managing users and their profile images.");
 
         Server server = new Server();
-        server.setUrl("http://13.124.235.72:8080");
+        server.setUrl("https://devbreak.site");
 
         Server server1 = new Server();
         server1.setUrl("http://localhost:8080");

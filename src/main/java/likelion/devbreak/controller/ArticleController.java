@@ -35,12 +35,11 @@ public class ArticleController {
     }
 
     // 특정 글 조회
-    @GetMapping("article/{articleId}")
+    @GetMapping("/article/breakthrough/{articleId}")
     public ResponseEntity<?> getArticle(
-            @PathVariable Long articleId,
-            @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+            @PathVariable Long articleId) {
         try {
-            ArticleResponse article = articleService.getArticleById(articleId, customUserDetails);
+            ArticleResponse article = articleService.getArticleById(articleId);
             return ResponseEntity.ok().body(article);
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
@@ -48,7 +47,7 @@ public class ArticleController {
     }
 
     // 글 수정
-    @PutMapping("article/{articleId}")
+    @PutMapping("/article/{articleId}")
     public ResponseEntity<?> updateArticle(
             @PathVariable Long articleId,
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
@@ -62,7 +61,7 @@ public class ArticleController {
     }
 
     // 글 삭제
-    @DeleteMapping("article/{articleId}")
+    @DeleteMapping("/article/{articleId}")
     public ResponseEntity<?> deleteArticle(
             @PathVariable Long articleId,
             @AuthenticationPrincipal CustomUserDetails customUserDetails){
@@ -75,7 +74,7 @@ public class ArticleController {
     }
 
     // 좋아요 및 좋아요 취소
-    @PutMapping("article/{articleId}/like")
+    @PutMapping("/article/{articleId}/like")
     public ResponseEntity<?> likeToggle(
             @PathVariable Long articleId,
             @AuthenticationPrincipal CustomUserDetails customUserDetails) {
@@ -88,12 +87,11 @@ public class ArticleController {
     }
 
     // 글 전체 조회
-    @GetMapping("article/breakthrough")
+    @GetMapping("/article/breakthrough")
     public ResponseEntity<?> getArticlesList(
-            @AuthenticationPrincipal CustomUserDetails customUserDetails
     ) {
         try {
-            List<ArticleListResponse> response = articleService.getAllArticles(customUserDetails);
+            List<ArticleListResponse> response = articleService.getAllArticles();
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());

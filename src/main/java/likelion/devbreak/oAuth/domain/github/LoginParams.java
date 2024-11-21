@@ -17,4 +17,8 @@ public class LoginParams {
 		body.add("code", authorizationCode);
 		return body;
 	}
+
+	public String getAuthorizationCode() {
+		return authorizationCode;
+	}
 }
