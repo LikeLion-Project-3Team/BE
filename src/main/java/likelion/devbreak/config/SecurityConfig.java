@@ -12,6 +12,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 
 @Configuration
@@ -28,7 +31,7 @@ public class SecurityConfig {
                         sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
-                                .requestMatchers("/api/home/blog","/api/home/article").permitAll()
+                                .requestMatchers("/api/home/blog", "/api/home/article").permitAll()
                                 .requestMatchers("/api/article/breakthrough/**").permitAll()
                                 .requestMatchers("/api/blog/non-member").permitAll()
                                 .requestMatchers("/api/issues-and-commits").permitAll()
@@ -41,5 +44,22 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        // 나머지 경로에 대한 기본 설정
+        CorsConfiguration securedConfiguration = new CorsConfiguration();
+        securedConfiguration.addAllowedOriginPattern("https://devbreak-eta.vercel.app");
+        securedConfiguration.addAllowedOriginPattern("http://localhost:5173");
+        securedConfiguration.addAllowedOriginPattern("http://localhost:8080");
+        securedConfiguration.addAllowedOriginPattern("https://devbreak.site");
+        securedConfiguration.addAllowedMethod("*");
+        securedConfiguration.addAllowedHeader("*");
+        securedConfiguration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", securedConfiguration);
+
+        return source;
     }
 }

@@ -8,7 +8,11 @@ import likelion.devbreak.oAuth.domain.dto.response.NameResponse;
 import likelion.devbreak.oAuth.domain.github.InfoResponse;
 import likelion.devbreak.oAuth.domain.github.LoginParams;
 import likelion.devbreak.oAuth.repository.RefreshTokenRepository;
+import likelion.devbreak.repository.CommentRepository;
+import likelion.devbreak.repository.FavoritesRepository;
+import likelion.devbreak.repository.LikesRepository;
 import likelion.devbreak.repository.UserRepository;
+import likelion.devbreak.service.GlobalService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +29,11 @@ public class OAuthLoginService {
 	private final RequestOAuthInfoService requestOAuthInfoService;
 	private final JwtTokenProvider jwtTokenProvider;
 	private final RefreshTokenRepository refreshTokenRepository;
+
+	private final LikesRepository likesRepository;
+	private final FavoritesRepository favoritesRepository;
+	private final GlobalService globalService;
+	private final CommentRepository commentRepository;
 
 	@Transactional
 	public AuthTokens login(LoginParams params, HttpServletResponse response) throws IOException {
@@ -49,15 +58,15 @@ public class OAuthLoginService {
 //		Cookie refreshCookie = createCookie("refreshToken", authTokens.getRefreshToken());
 //		response.addCookie(accessCookie);
 //		response.addCookie(refreshCookie);
-//		response.sendRedirect("http://localhost:5173/");
-		response.sendRedirect("http://localhost:5173?"+"accessToken="+authTokens.getAccessToken()+"&refreshToken="+authTokens.getRefreshToken());
+//		response.sendRedirect("https://devbreak-eta.vercel.app");
+		response.sendRedirect("https://devbreak-eta.vercel.app?"+"accessToken="+authTokens.getAccessToken()+"&refreshToken="+authTokens.getRefreshToken());
 		return authTokens;
 	}
 
 	private Cookie createCookie(String name, String content){
-		Integer hour = 10; // 쿠키 보존 시간
+		Integer hour = 2; // 쿠키 보존 시간
 		Cookie newCookie = new Cookie(name, content);
-		newCookie.setMaxAge(60*60*60*hour);
+		newCookie.setMaxAge(60*60*2*hour);
 		newCookie.setPath("/");
 		newCookie.setHttpOnly(true);
 		return newCookie;
@@ -117,6 +126,10 @@ public class OAuthLoginService {
 
 	@Transactional
 	public void delete(CustomUserDetails customUserDetails) {
+		User user = globalService.findUser(customUserDetails);
+		likesRepository.deleteAllByUser(user);
+		favoritesRepository.deleteAllByUser(user);
+		commentRepository.deleteAllByUserName(user.getUserName());
 		userRepository.deleteById(customUserDetails.getId());
 	}
 }

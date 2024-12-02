@@ -13,5 +13,6 @@ public interface BlogMemberRepository extends JpaRepository<BlogMember, Long> {
     Optional<BlogMember> findBlogMemberByUserNameAndBlog(String username, Blog blog);
 
     List<BlogMember> findBlogMemberByBlog(Blog blog);
+    List<BlogMember> findBlogMemberByUserName(String userName);
 
 }

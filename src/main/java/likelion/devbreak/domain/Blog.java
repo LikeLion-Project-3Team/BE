@@ -22,7 +22,10 @@ public class Blog{
     private Long id;
 
     private String blogName;
+
+    @Column(length = 1000)
     private String description;
+
     private String gitRepoUrl;
 
     @Setter

@@ -2,6 +2,7 @@ package likelion.devbreak.service;
 
 import likelion.devbreak.domain.*;
 import likelion.devbreak.domain.dto.request.ArticleRequest;
+import likelion.devbreak.domain.dto.response.ArticleListAboutResponse;
 import likelion.devbreak.domain.dto.response.ArticleListResponse;
 import likelion.devbreak.domain.dto.response.ArticleResponse;
 import likelion.devbreak.oAuth.domain.CustomUserDetails;
@@ -148,11 +149,11 @@ public class ArticleService {
     }
 
     // 글 전체 조회
-    public List<ArticleListResponse> getAllArticles() {
+    public List<ArticleListAboutResponse> getAllArticles() {
         List<Article> articles = articleRepository.findAllByOrderByCreatedAtDesc();
 
         return articles.stream()
-                .map(ArticleListResponse::new)
+                .map(ArticleListAboutResponse::new)
                 .collect(Collectors.toList());
     }
 

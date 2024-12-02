@@ -11,6 +11,7 @@ import likelion.devbreak.oAuth.domain.CustomUserDetails;
 import likelion.devbreak.repository.BlogMemberRepository;
 import likelion.devbreak.repository.UserRepository;
 import likelion.devbreak.service.GlobalService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
@@ -21,8 +22,11 @@ import reactor.core.scheduler.Schedulers;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
+@Slf4j
 @Component
 public class GitHubClient {
     private final WebClient webClient;
@@ -55,14 +59,33 @@ public class GitHubClient {
     }
 
     public Flux<IssueResponse> getIssues(String htmlUrl) {
-        String decodedUrl = URLDecoder.decode(htmlUrl, StandardCharsets.UTF_8);
-        String[] parts = decodedUrl.split("/");
-        String owner = parts[parts.length - 2];
-        String repoName = parts[parts.length - 1];
-        return webClient.get()
-                .uri("/repos/{owner}/{repo}/issues?state=all&sort=created&direction=desc", owner, repoName)
-                .retrieve()
-                .bodyToFlux(IssueResponse.class);
+        String requestId = UUID.randomUUID().toString(); // 요청 고유 ID 생성
+        log.info("[{}] Received URL: {}", requestId, htmlUrl);
+
+        if (htmlUrl == null || htmlUrl.trim().isEmpty()) {
+            log.error("Invalid htmlUrl: null or empty");
+            throw new IllegalArgumentException("Invalid htmlUrl: null or empty");
+        }
+
+        try {
+            String decodedUrl = URLDecoder.decode(htmlUrl, StandardCharsets.UTF_8);
+            String[] parts = decodedUrl.split("/");
+
+            log.info("[{}] Decoded URL parts: {}", requestId, Arrays.toString(parts));
+
+            String owner = parts[parts.length - 2];
+            String repoName = parts[parts.length - 1];
+
+            log.info("[{}] Owner: {}, Repo: {}", requestId, owner, repoName);
+
+            return webClient.get()
+                    .uri("/repos/{owner}/{repo}/issues?state=all&sort=created&direction=desc", owner, repoName)
+                    .retrieve()
+                    .bodyToFlux(IssueResponse.class);
+        } catch (Exception e) {
+            log.error("[{}] Error occurred: {}", requestId, e.getMessage(), e);
+            throw e;
+        }
     }
 
     public Flux<CommitResponse> getCommits(String htmlUrl) {
