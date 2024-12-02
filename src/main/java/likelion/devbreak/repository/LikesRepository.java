@@ -1,6 +1,7 @@
 package likelion.devbreak.repository;
 
 import likelion.devbreak.domain.Likes;
+import likelion.devbreak.domain.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -11,4 +12,6 @@ public interface LikesRepository extends JpaRepository<Likes, Long> {
 
     // 사용자가 좋아요를 누른 글 목록 조회
     List<Likes> findByUserIdAndIsLikedTrue(Long userId);
+
+    void deleteAllByUser(User user);
 }

@@ -9,10 +9,7 @@ import likelion.devbreak.domain.dto.response.*;
 import likelion.devbreak.dto.UpdateBlogData;
 import likelion.devbreak.oAuth.domain.CustomUserDetails;
 import likelion.devbreak.oAuth.domain.github.GitHubClient;
-import likelion.devbreak.repository.ArticleRepository;
-import likelion.devbreak.repository.BlogMemberRepository;
-import likelion.devbreak.repository.BlogRepository;
-import likelion.devbreak.repository.FavoritesRepository;
+import likelion.devbreak.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,12 +30,14 @@ public class BlogService {
     private final FavoritesRepository favoritesRepository;
 
     // 블로그 생성 관련 서비스
-
+    @Transactional
     public BlogResponse addBlog(CustomUserDetails customUserDetails, UpdateBlogRequest request) {
+        // 사용자 확인 및 중복된 블로그 확인
         User user = globalService.findUser(customUserDetails);
         blogRepository.findByGitRepoUrl(request.getGitRepoUrl())
                 .ifPresent(blog -> { throw new RuntimeException("이미 해당 레포지토리의 블로그가 존재합니다."); });
 
+        // Blog 생성 및 저장
         Blog blog = Blog.builder()
                 .user(user)
                 .blogName(request.getBlogName())
@@ -49,11 +48,18 @@ public class BlogService {
         blogRepository.save(blog);
 
         List<BlogMember> blogMembers = request.getBlogMember().stream()
-                .map(name -> new BlogMember(name, blog, user))
+                .distinct()
+                .filter(name -> !name.equals(user.getUserName()))
+                .map(name -> new BlogMember(name, blog))
                 .collect(Collectors.toList());
 
+        BlogMember userMember = new BlogMember(user.getUserName(), blog);
+        blogMembers.add(userMember);
         blogMemberRepository.saveAll(blogMembers);
-        Set<String> members = blogMembers.stream().map(member -> member.getUserName()).collect(Collectors.toSet());
+
+        Set<String> members = blogMembers.stream()
+                .map(BlogMember::getUserName)
+                .collect(Collectors.toSet());
 
         return BlogResponse.createWith(blog, members);
     }
@@ -61,7 +67,8 @@ public class BlogService {
     //블로그 목록 불러오기
     public List<BlogEventResponse> getAllBlogEvents(CustomUserDetails customUserDetails) {
         User user = globalService.findUser(customUserDetails);
-        List<Blog> blogList = blogRepository.findAllByUserId(user.getId());
+        List<Blog> blogList = blogMemberRepository.findBlogMemberByUserName(user.getUserName())
+                .stream().map(user1 -> user1.getBlog()).collect(Collectors.toList());
 
         return blogList.stream()
                 .map(BlogEventResponse::new)
@@ -81,6 +88,7 @@ public class BlogService {
         return GetBlogResponse.createWith(blog,members,breakThroughs,false);
     }
 
+    @Transactional
     // 블로그 수정 관련 서비스
     public GetBlogResponse updateBlog(CustomUserDetails customUserDetails, Long blogId, UpdateBlogRequest request){
         User user = globalService.findUser(customUserDetails);
@@ -96,7 +104,7 @@ public class BlogService {
         request.getBlogMember().stream()
                 .filter(member -> !blogMemberRepository.findBlogMemberByUserNameAndBlog(member, blog).isPresent()) // 이미 존재하지 않으면
                 .map(member -> {
-                    BlogMember newBlogMember = new BlogMember(member, blog,user);
+                    BlogMember newBlogMember = new BlogMember(member, blog);
                     return blogMemberRepository.save(newBlogMember); // 새로 생성한 BlogMember를 저장
                 })
                 .collect(Collectors.toList());
@@ -117,7 +125,7 @@ public class BlogService {
 
         return GetBlogResponse.createWith(blog,members,breakThroughs, isFavorited);
     }
-
+    @Transactional
     //즐겨찾기 기능
     public GetBlogResponse favoriteToggle(CustomUserDetails customUserDetails, Long blogId) {
         User user = globalService.findUser(customUserDetails);

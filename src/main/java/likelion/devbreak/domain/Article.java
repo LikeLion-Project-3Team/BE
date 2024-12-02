@@ -24,7 +24,10 @@ public class Article {
     private Long id;
 
     private String title;
+
+    @Column(columnDefinition = "TEXT")
     private String content;
+
     private int likeCount;
     private String about;
     private String problem;

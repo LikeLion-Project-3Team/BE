@@ -19,9 +19,9 @@ public class SwaggerConfig {
     @Bean
     public OpenAPI customOpenAPI() {
         Info info = new Info()
-                .title("User Management API")
+                .title("devbreak API")
                 .version("1.0")
-                .description("API for managing users and their profile images.");
+                .description("개발자들을 위한 팀 단위 기술 블로그");
 
         Server server = new Server();
         server.setUrl("https://devbreak.site");
