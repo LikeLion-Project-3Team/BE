@@ -35,10 +35,10 @@ public class CommentController {
         }
     }
 
-    @GetMapping("/{articleId}")
+    @GetMapping("/comments/{articleId}")
     @Operation(summary = "전체 댓글 조회")
     public ResponseEntity<?> getCommentList(@AuthenticationPrincipal CustomUserDetails customUserDetails,
-                                            @PathVariable Long articleId){
+                                            @PathVariable("articleId") Long articleId){
         try{
             List<CommentResponse> commentResponseList = commentService.getComment(customUserDetails, articleId);
             return ResponseEntity.ok().body(commentResponseList);

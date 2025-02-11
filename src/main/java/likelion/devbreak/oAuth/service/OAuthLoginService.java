@@ -14,6 +14,9 @@ import likelion.devbreak.repository.LikesRepository;
 import likelion.devbreak.repository.UserRepository;
 import likelion.devbreak.service.GlobalService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +25,7 @@ import java.util.Date;
 import java.util.Optional;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class OAuthLoginService {
 	private final UserRepository userRepository;
@@ -54,22 +58,35 @@ public class OAuthLoginService {
 			refreshTokenRepository.save(refreshTokenEntity);
 		}
 
-//		Cookie accessCookie = createCookie("accessToken", authTokens.getAccessToken());
-//		Cookie refreshCookie = createCookie("refreshToken", authTokens.getRefreshToken());
-//		response.addCookie(accessCookie);
-//		response.addCookie(refreshCookie);
-//		response.sendRedirect("https://devbreak-eta.vercel.app");
-		response.sendRedirect("https://devbreak-eta.vercel.app?"+"accessToken="+authTokens.getAccessToken()+"&refreshToken="+authTokens.getRefreshToken());
+		Date accessTokenExpiration = jwtTokenProvider.getTokenExpiration(authTokens.getAccessToken());
+		Date refreshTokenExpiration = jwtTokenProvider.getTokenExpiration(authTokens.getRefreshToken());
+
+		long accessTokenMaxAge = (accessTokenExpiration.getTime() - System.currentTimeMillis()) / 1000L;
+		long refreshTokenMaxAge = (refreshTokenExpiration.getTime() - System.currentTimeMillis()) / 1000L;
+
+		ResponseCookie accessCookie = createCookie("accessToken", authTokens.getAccessToken(), "devbreak.site", true, accessTokenMaxAge);
+		ResponseCookie refreshCookie = createCookie("refreshToken", authTokens.getRefreshToken(), "devbreak.site", true, refreshTokenMaxAge);
+
+		response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
+		response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+
+		log.info("Set-Cookie 헤더: {}", accessCookie);
+		log.info("Set-Cookie 헤더: {}", refreshCookie);
+
+		response.sendRedirect("https://devbreak-eta.vercel.app");
+//		response.sendRedirect("https://devbreak-eta.vercel.app?"+"accessToken="+authTokens.getAccessToken()+"&refreshToken="+authTokens.getRefreshToken());
 		return authTokens;
 	}
 
-	private Cookie createCookie(String name, String content){
-		Integer hour = 2; // 쿠키 보존 시간
-		Cookie newCookie = new Cookie(name, content);
-		newCookie.setMaxAge(60*60*2*hour);
-		newCookie.setPath("/");
-		newCookie.setHttpOnly(true);
-		return newCookie;
+	private ResponseCookie createCookie(String name, String content, String domain, boolean isSecure,long maxage) {
+		return ResponseCookie.from(name, content)
+				.domain(domain) // 쿠키의 도메인 설정
+				.path("/") // 모든 경로에서 유효
+				.sameSite("None") // Cross-Origin 요청 허용
+				.httpOnly(true) // 자바스크립트 접근 불가
+				.secure(isSecure) // HTTPS 환경에서만 동작 (로컬 환경에서는 false로 설정 가능)
+				.maxAge(maxage) // 쿠키 유효 기간 설정 (예: 7일)
+				.build();
 	}
 
 	private Long findOrCreateMember(InfoResponse infoResponse) {
@@ -120,8 +137,29 @@ public class OAuthLoginService {
 	}
 
 	@Transactional
-	public void logout(Long userId) {
+	public void logout(Long userId, HttpServletResponse response) {
 		refreshTokenRepository.deleteByUserId(userId);
+
+		ResponseCookie accessCookie = createExpiredCookie("accessToken", "devbreak.site", true);
+		// 만료된 refreshToken 쿠키 생성
+		ResponseCookie refreshCookie = createExpiredCookie("refreshToken", "devbreak.site", true);
+
+		// 응답 헤더에 만료된 쿠키 추가
+		response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
+		response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+
+		log.info("Set-Cookie 헤더: {}", accessCookie);
+		log.info("Set-Cookie 헤더: {}", refreshCookie);
+	}
+	private ResponseCookie createExpiredCookie(String name, String domain, boolean isSecure) {
+		return ResponseCookie.from(name, null) // 쿠키 값을 null로 설정
+				.domain(domain) // 쿠키의 도메인 설정
+				.path("/") // 모든 경로에서 유효
+				.sameSite("None") // Cross-Origin 요청 허용
+				.httpOnly(true) // 자바스크립트 접근 불가
+				.secure(isSecure) // HTTPS 환경에서만 동작
+				.maxAge(0) // 즉시 만료
+				.build();
 	}
 
 	@Transactional

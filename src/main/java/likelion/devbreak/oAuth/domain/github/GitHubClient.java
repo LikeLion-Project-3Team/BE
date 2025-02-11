@@ -30,9 +30,7 @@ import java.util.UUID;
 @Component
 public class GitHubClient {
     private final WebClient webClient;
-    private final UserRepository userRepository;
     private final GlobalService globalService;
-    private final BlogMemberRepository blogMemberRepository;
 
     public GitHubClient(@Value("${github.base-url}") String baseUrl,
                         @Value("${github.access-token}") String token,
@@ -43,9 +41,7 @@ public class GitHubClient {
                 .defaultHeader("Authorization", "Bearer " + token)
                 .defaultHeader("Accept", "application/vnd.github+json")
                 .build();
-        this.userRepository = userRepository;
         this.globalService = globalService;
-        this.blogMemberRepository = blogMemberRepository;
     }
 
 
@@ -99,6 +95,25 @@ public class GitHubClient {
                 .uri("/repos/{owner}/{repo}/commits", owner, repoName)
                 .retrieve()
                 .bodyToFlux(CommitResponse.class);
+    }
+
+    public boolean isUserExists(CustomUserDetails customUserDetails, String username) {
+        globalService.findUser(customUserDetails); // 사용자 검증 등 추가 로직
+        try {
+            // WebClient 동기 호출
+            webClient.get()
+                    .uri("/users/{username}", username)
+                    .retrieve()
+                    .bodyToMono(Void.class)
+                    .block(); // block()으로 동기화
+
+            return true; // 호출 성공 시 사용자 존재
+        } catch (Exception e) {
+            if (e.getMessage() != null && e.getMessage().contains("404")) {
+                return false; // 404 발생 시 사용자 미존재
+            }
+            throw new RuntimeException("에러 메세지 : ", e); // 기타 예외 처리
+        }
     }
 
 

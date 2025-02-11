@@ -2,11 +2,13 @@ package likelion.devbreak.service;
 
 import likelion.devbreak.domain.Article;
 import likelion.devbreak.domain.Comment;
+import likelion.devbreak.domain.Notice;
 import likelion.devbreak.domain.User;
 import likelion.devbreak.domain.dto.request.CommentRequest;
 import likelion.devbreak.domain.dto.response.CommentResponse;
 import likelion.devbreak.oAuth.domain.CustomUserDetails;
 import likelion.devbreak.repository.CommentRepository;
+import likelion.devbreak.repository.NoticeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +23,7 @@ public class CommentService {
 
     private final GlobalService globalService;
     private final CommentRepository commentRepository;
+    private final NoticeRepository noticeRepository;
 
     @Transactional
     public CommentResponse createComment(CustomUserDetails customUserDetails, CommentRequest commentRequest){
@@ -34,17 +37,22 @@ public class CommentService {
 
         Comment saved = commentRepository.save(comment);
 
+        Notice notice = new Notice(article.getUser().getUserName(),"새로운 댓글", user.getUserName(), article.getId(), false, article.getBlog().getBlogName());
+        noticeRepository.save(notice);
+
         return new CommentResponse(saved.getArticle().getId(), saved.getId(), saved.getUserName(), saved.getContent(), saved.getCreatedAt(), true , true);
     }
 
-    public List<CommentResponse> getComment(CustomUserDetails customUserDetails, Long articleId){
-        User user = globalService.findUser(customUserDetails);
+    public List<CommentResponse> getComment(CustomUserDetails customUserDetails, Long articleId) {
+        // 로그인하지 않은 경우 user는 null 처리
+        User user = customUserDetails != null ? globalService.findUser(customUserDetails) : null;
         Article article = globalService.findArticleById(articleId);
 
         List<CommentResponse> commentResponseList = commentRepository.findCommentByArticle(article)
                 .stream()
                 .map(comment -> {
-                    boolean isSameUser = comment.getUserName().equals(user.getUserName());
+                    // 로그인하지 않은 경우 isSameUser는 false
+                    boolean isSameUser = user != null && comment.getUserName().equals(user.getUserName());
                     return new CommentResponse(
                             comment.getArticle().getId(),
                             comment.getId(),
@@ -60,10 +68,11 @@ public class CommentService {
         return commentResponseList;
     }
 
+
     @Transactional
     public CommentResponse updateComment(CustomUserDetails customUserDetails, Long commentId, CommentRequest commentRequest){
         User user = globalService.findUser(customUserDetails);
-        globalService.findArticleById(commentRequest.getArticleId());
+        Article article = globalService.findArticleById(commentRequest.getArticleId());
         Comment comment = globalService.findCommentById(commentId);
 
         boolean isSameUser = comment.getUserName().equals(user.getUserName());
@@ -74,6 +83,9 @@ public class CommentService {
 
         comment.setContent(commentRequest.getContent());
         Comment save = commentRepository.save(comment);
+
+        Notice notice = new Notice(article.getUser().getUserName(),"수정된 댓글", user.getUserName(), article.getId(), false, article.getBlog().getBlogName());
+        noticeRepository.save(notice);
 
         return new CommentResponse(
                 save.getArticle().getId(),

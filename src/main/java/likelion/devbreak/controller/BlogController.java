@@ -64,6 +64,7 @@ public class BlogController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+
     // 특정 블로그 수정
     @PutMapping("/blog/{blogId}")
     @Operation(summary = "특정 블로그 수정 API")

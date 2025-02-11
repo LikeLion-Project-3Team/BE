@@ -1,11 +1,14 @@
 package likelion.devbreak.oAuth.controller;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import likelion.devbreak.domain.User;
 import likelion.devbreak.oAuth.domain.AuthTokens;
 import likelion.devbreak.oAuth.domain.CustomUserDetails;
+import likelion.devbreak.oAuth.domain.JwtTokenProvider;
 import likelion.devbreak.oAuth.domain.RefreshTokenRequest;
 import likelion.devbreak.oAuth.domain.dto.response.NameResponse;
 import likelion.devbreak.oAuth.domain.github.LoginParams;
@@ -18,6 +21,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin("*")
@@ -27,6 +32,7 @@ import org.springframework.web.client.HttpClientErrorException;
 public class AuthController {
 
     private final OAuthLoginService oAuthLoginService;
+    private final JwtTokenProvider jwtTokenProvider;
 
     // GET 방식으로 code와 state 받기
     @GetMapping("/github")
@@ -50,8 +56,9 @@ public class AuthController {
 
     @PostMapping("/logout")
     @Operation(summary = "로그아웃 API")
-    public ResponseEntity<?> logout(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        oAuthLoginService.logout(customUserDetails.getId());
+    public ResponseEntity<?> logout(@AuthenticationPrincipal CustomUserDetails customUserDetails,
+                                    HttpServletResponse response) {
+        oAuthLoginService.logout(customUserDetails.getId(), response);
         return ResponseEntity.ok("Logged out successfully");
     }
 
@@ -75,4 +82,52 @@ public class AuthController {
         NameResponse info = oAuthLoginService.getInfo(user.getId());
         return ResponseEntity.ok(info);
     }
+
+
+
+    @GetMapping("/status")
+    public ResponseEntity<?> checkLoginStatus(@CookieValue(value = "accessToken", required = false) String accessToken) {
+        log.info("Access token received: {}", accessToken);
+
+        if (accessToken == null || accessToken.isEmpty()) {
+            log.warn("Access token is missing or empty");
+            return ResponseEntity.ok(Map.of(
+                    "loggedIn", false,
+                    "message", "Access token is missing or invalid"
+            ));
+        }
+
+        try {
+            // 토큰 유효성 검증
+            jwtTokenProvider.validateToken(accessToken);
+
+            // 토큰에서 사용자 ID 추출
+            String userId = jwtTokenProvider.extractSubject(accessToken);
+
+            log.info("Token valid. User ID: {}", userId);
+            return ResponseEntity.ok(Map.of(
+                    "loggedIn", true,
+                    "userId", Long.valueOf(userId)
+            ));
+        } catch (ExpiredJwtException e) {
+            log.warn("Token expired: {}", e.getMessage());
+            return ResponseEntity.ok(Map.of(
+                    "loggedIn", false,
+                    "message", "Token expired"
+            ));
+        } catch (JwtException e) {
+            log.warn("Invalid token: {}", e.getMessage());
+            return ResponseEntity.ok(Map.of(
+                    "loggedIn", false,
+                    "message", "Invalid token"
+            ));
+        } catch (Exception e) {
+            log.error("Unexpected error during token validation", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "loggedIn", false,
+                    "message", "Internal server error"
+            ));
+        }
+    }
+
 }
