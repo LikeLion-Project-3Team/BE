@@ -24,7 +24,7 @@ public class SwaggerConfig {
                 .description("개발자들을 위한 팀 단위 기술 블로그");
 
         Server server = new Server();
-        server.setUrl("https://devbreak.site");
+        server.setUrl("https://api.devbreak.site");
 
         Server server1 = new Server();
         server1.setUrl("http://localhost:8080");

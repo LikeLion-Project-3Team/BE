@@ -1,9 +1,6 @@
 package likelion.devbreak.service;
 
-import likelion.devbreak.domain.Blog;
-import likelion.devbreak.domain.BlogMember;
-import likelion.devbreak.domain.Favorites;
-import likelion.devbreak.domain.User;
+import likelion.devbreak.domain.*;
 import likelion.devbreak.domain.dto.request.UpdateBlogRequest;
 import likelion.devbreak.domain.dto.response.*;
 import likelion.devbreak.dto.UpdateBlogData;
@@ -28,6 +25,7 @@ public class BlogService {
     private final BlogMemberRepository blogMemberRepository;
     private final ArticleRepository articleRepository;
     private final FavoritesRepository favoritesRepository;
+    private final NoticeRepository noticeRepository;
 
     // 블로그 생성 관련 서비스
     @Transactional
@@ -60,6 +58,13 @@ public class BlogService {
         Set<String> members = blogMembers.stream()
                 .map(BlogMember::getUserName)
                 .collect(Collectors.toSet());
+
+        List<Notice> notices = blogMembers.stream()
+                .filter(name -> !name.equals(user.getUserName()))
+                .map(name -> new Notice(name.getUserName(),"블로그 초대", user.getUserName(), blog.getId(), false, name.getBlog().getBlogName()))
+                .collect(Collectors.toList());
+
+        noticeRepository.saveAll(notices);
 
         return BlogResponse.createWith(blog, members);
     }
@@ -105,11 +110,14 @@ public class BlogService {
                 .filter(member -> !blogMemberRepository.findBlogMemberByUserNameAndBlog(member, blog).isPresent()) // 이미 존재하지 않으면
                 .map(member -> {
                     BlogMember newBlogMember = new BlogMember(member, blog);
+                    Notice notice = new Notice(newBlogMember.getUserName(),"블로그 초대", user.getUserName(), blog.getId(), false, newBlogMember.getBlog().getBlogName());
+                    noticeRepository.save(notice);
                     return blogMemberRepository.save(newBlogMember); // 새로 생성한 BlogMember를 저장
                 })
                 .collect(Collectors.toList());
 
         List<BlogMember> existingMembers = blogMemberRepository.findBlogMemberByBlog(blog);
+
         existingMembers.stream()
                 .filter(existingMember -> !request.getBlogMember().contains(existingMember.getUserName())) // request에 없는 멤버
                 .forEach(existingsMember -> blogMemberRepository.delete(existingsMember));
@@ -143,6 +151,15 @@ public class BlogService {
 
         Set<String> members = blogMemberRepository.findBlogMemberByBlogId(blogId)
                 .stream().map(member -> member.getUserName()).collect(Collectors.toSet());
+
+        if(favorite.getIsFavorited()){
+            List<Notice> notices = members.stream()
+                    .map(name -> new Notice(name,"블로그 즐겨찾기", user.getUserName(), blog.getId(), false,blog.getBlogName()))
+                    .collect(Collectors.toList());
+
+            noticeRepository.saveAll(notices);
+        }
+
 
         List<BreakThrough> breakThroughs = getArticles(blogId);
 

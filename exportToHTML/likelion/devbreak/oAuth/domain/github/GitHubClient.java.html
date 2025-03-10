@@ -1,0 +1,141 @@
+<html>
+<head>
+<title>GitHubClient.java</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #6a8759;}
+.s3 { color: #808080;}
+.s4 { color: #6897bb;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+GitHubClient.java</font>
+</center></td></tr></table>
+<pre><span class="s0">package </span><span class="s1">likelion.devbreak.oAuth.domain.github</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">likelion.devbreak.domain.Blog</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">likelion.devbreak.domain.BlogMember</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">likelion.devbreak.domain.User</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">likelion.devbreak.oAuth.domain.dto.response.CommitResponse</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">likelion.devbreak.oAuth.domain.dto.response.ContributorsResponse</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">likelion.devbreak.oAuth.domain.dto.response.IssueResponse</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">likelion.devbreak.oAuth.domain.dto.response.RepoResponse</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">likelion.devbreak.oAuth.domain.CustomUserDetails</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">likelion.devbreak.repository.BlogMemberRepository</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">likelion.devbreak.repository.UserRepository</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">likelion.devbreak.service.GlobalService</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">lombok.extern.slf4j.Slf4j</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">org.springframework.beans.factory.annotation.Value</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">org.springframework.security.core.userdetails.UsernameNotFoundException</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">org.springframework.stereotype.Component</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">org.springframework.web.reactive.function.client.WebClient</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">reactor.core.publisher.Flux</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">reactor.core.publisher.Mono</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">reactor.core.scheduler.Schedulers</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">java.net.URLDecoder</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">java.nio.charset.StandardCharsets</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">java.util.Arrays</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">java.util.List</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">java.util.UUID</span><span class="s0">;</span>
+
+<span class="s1">@Slf4j</span>
+<span class="s1">@Component</span>
+<span class="s0">public class </span><span class="s1">GitHubClient {</span>
+    <span class="s0">private final </span><span class="s1">WebClient webClient</span><span class="s0">;</span>
+    <span class="s0">private final </span><span class="s1">GlobalService globalService</span><span class="s0">;</span>
+
+    <span class="s0">public </span><span class="s1">GitHubClient(@Value(</span><span class="s2">&quot;${github.base-url}&quot;</span><span class="s1">) String baseUrl</span><span class="s0">,</span>
+                        <span class="s1">@Value(</span><span class="s2">&quot;${github.access-token}&quot;</span><span class="s1">) String token</span><span class="s0">,</span>
+                        <span class="s1">UserRepository userRepository</span><span class="s0">,</span><span class="s1">GlobalService globalService</span><span class="s0">,</span>
+                        <span class="s1">BlogMemberRepository blogMemberRepository) {</span>
+        <span class="s0">this</span><span class="s1">.webClient = WebClient.builder()</span>
+                <span class="s1">.baseUrl(baseUrl)</span>
+                <span class="s1">.defaultHeader(</span><span class="s2">&quot;Authorization&quot;</span><span class="s0">, </span><span class="s2">&quot;Bearer &quot; </span><span class="s1">+ token)</span>
+                <span class="s1">.defaultHeader(</span><span class="s2">&quot;Accept&quot;</span><span class="s0">, </span><span class="s2">&quot;application/vnd.github+json&quot;</span><span class="s1">)</span>
+                <span class="s1">.build()</span><span class="s0">;</span>
+        <span class="s0">this</span><span class="s1">.globalService = globalService</span><span class="s0">;</span>
+    <span class="s1">}</span>
+
+
+
+    <span class="s0">public </span><span class="s1">Flux&lt;RepoResponse&gt; getUserRepositories(CustomUserDetails customUserDetails) {</span>
+        <span class="s1">User user = globalService.findUser(customUserDetails)</span><span class="s0">;</span>
+        <span class="s0">return </span><span class="s1">webClient.get()</span>
+                <span class="s1">.uri(</span><span class="s2">&quot;/users/{username}/repos?type=all&amp;sort=created&amp;direction=desc&quot;</span><span class="s0">, </span><span class="s1">user.getUserName())</span>
+                <span class="s1">.retrieve()</span>
+                <span class="s1">.bodyToFlux(RepoResponse.</span><span class="s0">class</span><span class="s1">)</span><span class="s0">;</span>
+    <span class="s1">}</span>
+
+    <span class="s0">public </span><span class="s1">Flux&lt;IssueResponse&gt; getIssues(String htmlUrl) {</span>
+        <span class="s1">String requestId = UUID.randomUUID().toString()</span><span class="s0">; </span><span class="s3">// 요청 고유 ID 생성</span>
+        <span class="s1">log.info(</span><span class="s2">&quot;[{}] Received URL: {}&quot;</span><span class="s0">, </span><span class="s1">requestId</span><span class="s0">, </span><span class="s1">htmlUrl)</span><span class="s0">;</span>
+
+        <span class="s0">if </span><span class="s1">(htmlUrl == </span><span class="s0">null </span><span class="s1">|| htmlUrl.trim().isEmpty()) {</span>
+            <span class="s1">log.error(</span><span class="s2">&quot;Invalid htmlUrl: null or empty&quot;</span><span class="s1">)</span><span class="s0">;</span>
+            <span class="s0">throw new </span><span class="s1">IllegalArgumentException(</span><span class="s2">&quot;Invalid htmlUrl: null or empty&quot;</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s1">}</span>
+
+        <span class="s0">try </span><span class="s1">{</span>
+            <span class="s1">String decodedUrl = URLDecoder.decode(htmlUrl</span><span class="s0">, </span><span class="s1">StandardCharsets.UTF_8)</span><span class="s0">;</span>
+            <span class="s1">String[] parts = decodedUrl.split(</span><span class="s2">&quot;/&quot;</span><span class="s1">)</span><span class="s0">;</span>
+
+            <span class="s1">log.info(</span><span class="s2">&quot;[{}] Decoded URL parts: {}&quot;</span><span class="s0">, </span><span class="s1">requestId</span><span class="s0">, </span><span class="s1">Arrays.toString(parts))</span><span class="s0">;</span>
+
+            <span class="s1">String owner = parts[parts.length - </span><span class="s4">2</span><span class="s1">]</span><span class="s0">;</span>
+            <span class="s1">String repoName = parts[parts.length - </span><span class="s4">1</span><span class="s1">]</span><span class="s0">;</span>
+
+            <span class="s1">log.info(</span><span class="s2">&quot;[{}] Owner: {}, Repo: {}&quot;</span><span class="s0">, </span><span class="s1">requestId</span><span class="s0">, </span><span class="s1">owner</span><span class="s0">, </span><span class="s1">repoName)</span><span class="s0">;</span>
+
+            <span class="s0">return </span><span class="s1">webClient.get()</span>
+                    <span class="s1">.uri(</span><span class="s2">&quot;/repos/{owner}/{repo}/issues?state=all&amp;sort=created&amp;direction=desc&quot;</span><span class="s0">, </span><span class="s1">owner</span><span class="s0">, </span><span class="s1">repoName)</span>
+                    <span class="s1">.retrieve()</span>
+                    <span class="s1">.bodyToFlux(IssueResponse.</span><span class="s0">class</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s1">} </span><span class="s0">catch </span><span class="s1">(Exception e) {</span>
+            <span class="s1">log.error(</span><span class="s2">&quot;[{}] Error occurred: {}&quot;</span><span class="s0">, </span><span class="s1">requestId</span><span class="s0">, </span><span class="s1">e.getMessage()</span><span class="s0">, </span><span class="s1">e)</span><span class="s0">;</span>
+            <span class="s0">throw </span><span class="s1">e</span><span class="s0">;</span>
+        <span class="s1">}</span>
+    <span class="s1">}</span>
+
+    <span class="s0">public </span><span class="s1">Flux&lt;CommitResponse&gt; getCommits(String htmlUrl) {</span>
+
+        <span class="s1">String decodedUrl = URLDecoder.decode(htmlUrl</span><span class="s0">, </span><span class="s1">StandardCharsets.UTF_8)</span><span class="s0">;</span>
+        <span class="s1">String[] parts = decodedUrl.split(</span><span class="s2">&quot;/&quot;</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s1">String owner = parts[parts.length - </span><span class="s4">2</span><span class="s1">]</span><span class="s0">;</span>
+        <span class="s1">String repoName = parts[parts.length - </span><span class="s4">1</span><span class="s1">]</span><span class="s0">;</span>
+
+        <span class="s0">return </span><span class="s1">webClient.get()</span>
+                <span class="s1">.uri(</span><span class="s2">&quot;/repos/{owner}/{repo}/commits&quot;</span><span class="s0">, </span><span class="s1">owner</span><span class="s0">, </span><span class="s1">repoName)</span>
+                <span class="s1">.retrieve()</span>
+                <span class="s1">.bodyToFlux(CommitResponse.</span><span class="s0">class</span><span class="s1">)</span><span class="s0">;</span>
+    <span class="s1">}</span>
+
+    <span class="s0">public boolean </span><span class="s1">isUserExists(CustomUserDetails customUserDetails</span><span class="s0">, </span><span class="s1">String username) {</span>
+        <span class="s1">globalService.findUser(customUserDetails)</span><span class="s0">; </span><span class="s3">// 사용자 검증 등 추가 로직</span>
+        <span class="s0">try </span><span class="s1">{</span>
+            <span class="s3">// WebClient 동기 호출</span>
+            <span class="s1">webClient.get()</span>
+                    <span class="s1">.uri(</span><span class="s2">&quot;/users/{username}&quot;</span><span class="s0">, </span><span class="s1">username)</span>
+                    <span class="s1">.retrieve()</span>
+                    <span class="s1">.bodyToMono(Void.</span><span class="s0">class</span><span class="s1">)</span>
+                    <span class="s1">.block()</span><span class="s0">; </span><span class="s3">// block()으로 동기화</span>
+
+            <span class="s0">return true; </span><span class="s3">// 호출 성공 시 사용자 존재</span>
+        <span class="s1">} </span><span class="s0">catch </span><span class="s1">(Exception e) {</span>
+            <span class="s0">if </span><span class="s1">(e.getMessage() != </span><span class="s0">null </span><span class="s1">&amp;&amp; e.getMessage().contains(</span><span class="s2">&quot;404&quot;</span><span class="s1">)) {</span>
+                <span class="s0">return false; </span><span class="s3">// 404 발생 시 사용자 미존재</span>
+            <span class="s1">}</span>
+            <span class="s0">throw new </span><span class="s1">RuntimeException(</span><span class="s2">&quot;에러 메세지 : &quot;</span><span class="s0">, </span><span class="s1">e)</span><span class="s0">; </span><span class="s3">// 기타 예외 처리</span>
+        <span class="s1">}</span>
+    <span class="s1">}</span>
+
+
+<span class="s1">}</span>
+</pre>
+</body>
+</html>

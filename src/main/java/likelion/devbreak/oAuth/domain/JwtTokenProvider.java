@@ -62,12 +62,12 @@ public class JwtTokenProvider {
 		}
 	}
 
-	public boolean isTokenExpired(String token) {
+	public Date getTokenExpiration(String token) {
 		try {
-			Claims claims = parseClaims(token);
-			return claims.getExpiration().before(new Date());
+			Claims claims = parseClaims(token); // Claims(페이로드) 추출
+			return claims.getExpiration(); // 만료 시간 반환
 		} catch (ExpiredJwtException e) {
-			return true;
+			return null; // 만료된 경우 null 반환
 		}
 	}
 }

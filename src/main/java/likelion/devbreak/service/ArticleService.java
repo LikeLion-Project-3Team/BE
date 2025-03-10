@@ -6,10 +6,7 @@ import likelion.devbreak.domain.dto.response.ArticleListAboutResponse;
 import likelion.devbreak.domain.dto.response.ArticleListResponse;
 import likelion.devbreak.domain.dto.response.ArticleResponse;
 import likelion.devbreak.oAuth.domain.CustomUserDetails;
-import likelion.devbreak.repository.ArticleRepository;
-import likelion.devbreak.repository.BlogRepository;
-import likelion.devbreak.repository.LikesRepository;
-import likelion.devbreak.repository.UserRepository;
+import likelion.devbreak.repository.*;
 import org.springframework.stereotype.Service;
 import org.webjars.NotFoundException;
 
@@ -23,11 +20,17 @@ public class ArticleService {
     private final LikesRepository likesRepository;
 
     private final GlobalService globalService;
+    private final NoticeRepository noticeRepository;
+    private final FavoritesRepository favoritesRepository;
+    private final UserRepository userRepository;
 
-    public ArticleService(ArticleRepository articleRepository, LikesRepository likesRepository, GlobalService globalService){
+    public ArticleService(ArticleRepository articleRepository, LikesRepository likesRepository, GlobalService globalService, NoticeRepository noticeRepository, FavoritesRepository favoritesRepository, UserRepository userRepository){
         this.articleRepository = articleRepository;
         this.likesRepository = likesRepository;
         this.globalService = globalService;
+        this.noticeRepository = noticeRepository;
+        this.favoritesRepository = favoritesRepository;
+        this.userRepository = userRepository;
     }
     public ArticleResponse createArticle(CustomUserDetails customUserDetails, ArticleRequest articleRequest) {
         User user = globalService.findUser(customUserDetails);
@@ -47,6 +50,12 @@ public class ArticleService {
 
         Article savedArticle = articleRepository.save(article);
         Likes isLiked = likesRepository.save(likes);
+
+        List<Notice> noticeList = newArticleNotice(article);
+
+        if(!noticeList.isEmpty()){
+            noticeRepository.saveAll(noticeList);
+        }
 
         return toArticleResponse(savedArticle, isLiked);
     }
@@ -106,6 +115,12 @@ public class ArticleService {
         article.setLikeCount(article.getLikeCount() + (like.getIsLiked() ? 1 : -1));
 
         likesRepository.save(like);
+
+        if(like.getIsLiked()){
+            Notice notice = new Notice(article.getUser().getUserName(),"글 좋아요", user.getUserName(), article.getId(), false, article.getBlog().getBlogName());
+
+            noticeRepository.save(notice);
+        }
 
         Article likedArticle = articleRepository.save(article);
         return toArticleResponse(likedArticle, like);
@@ -174,6 +189,16 @@ public class ArticleService {
         return likes.stream()
                 .map(like -> new ArticleListResponse(like.getArticle()))
                 .collect(Collectors.toList());
+    }
+
+    public List<Notice> newArticleNotice(Article article){
+        List<Notice> notices = favoritesRepository.findByBlogIdAndIsFavoritedTrue(article.getBlog().getId())
+                .stream().map(favorites -> {
+                    String userName = favorites.getUser().getUserName();
+                    return new Notice(userName, "즐겨찾기 한 blog의 새로운 글", article.getUser().getUserName(), article.getId(), false, article.getBlog().getBlogName());
+                }).collect(Collectors.toList());
+
+        return notices;
     }
 
 

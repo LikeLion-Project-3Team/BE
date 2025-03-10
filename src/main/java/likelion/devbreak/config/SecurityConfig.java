@@ -5,6 +5,7 @@ import likelion.devbreak.oAuth.filter.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -16,6 +17,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import static org.springframework.security.config.Customizer.withDefaults;
+
 
 @Configuration
 @RequiredArgsConstructor
@@ -26,6 +29,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)  // CSRF 보호 비활성화
                 .sessionManagement(
                         sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -33,6 +37,7 @@ public class SecurityConfig {
                         authorizeRequests
                                 .requestMatchers("/api/home/blog", "/api/home/article").permitAll()
                                 .requestMatchers("/api/article/breakthrough/**").permitAll()
+                                .requestMatchers("/api/comment/comments/**").permitAll()
                                 .requestMatchers("/api/blog/non-member").permitAll()
                                 .requestMatchers("/api/issues-and-commits").permitAll()
                                 .anyRequest().permitAll()) // 그 외 요청은 인증 필요
@@ -49,10 +54,10 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         // 나머지 경로에 대한 기본 설정
         CorsConfiguration securedConfiguration = new CorsConfiguration();
-        securedConfiguration.addAllowedOriginPattern("https://devbreak-eta.vercel.app");
-        securedConfiguration.addAllowedOriginPattern("http://localhost:5173");
-        securedConfiguration.addAllowedOriginPattern("http://localhost:8080");
-        securedConfiguration.addAllowedOriginPattern("https://devbreak.site");
+        securedConfiguration.addAllowedOrigin("https://www.devbreak.site");
+        securedConfiguration.addAllowedOrigin("https://devbreak.site");
+        securedConfiguration.addAllowedOrigin("https://api.devbreak.site");
+        securedConfiguration.addAllowedOrigin("https://devbreak-eta.vercel.app");
         securedConfiguration.addAllowedMethod("*");
         securedConfiguration.addAllowedHeader("*");
         securedConfiguration.setAllowCredentials(true);

@@ -9,6 +9,8 @@ import likelion.devbreak.oAuth.domain.dto.response.RepoResponse;
 import likelion.devbreak.oAuth.domain.CustomUserDetails;
 import likelion.devbreak.oAuth.domain.dto.response.TitleResponse;
 import likelion.devbreak.oAuth.domain.github.GitHubClient;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
@@ -18,6 +20,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -92,6 +95,20 @@ public class GitHubController {
                 ));
 
         return Flux.merge(issueResponses, commitResponses);
+    }
+
+    @GetMapping("/check-user")
+    @Operation(summary = "깃허브 유저 존재 확인 API")
+    public ResponseEntity<?> checkUserExists(@RequestParam("username") String userName,
+                                             @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        try {
+            boolean isExists = gitHubClient.isUserExists(customUserDetails, userName);
+            // 성공적으로 결과를 반환
+            return ResponseEntity.ok().body(Map.of("isexists", isExists));
+        } catch (Exception e) {
+            // 에러 처리
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
+        }
     }
 
 }
