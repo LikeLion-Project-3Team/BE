@@ -1,6 +1,7 @@
 package likelion.devbreak.oAuth.service;
 
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import likelion.devbreak.domain.User;
 import likelion.devbreak.oAuth.domain.*;
@@ -40,7 +41,7 @@ public class OAuthLoginService {
 	private final CommentRepository commentRepository;
 
 	@Transactional
-	public AuthTokens login(LoginParams params, HttpServletResponse response) throws IOException {
+	public AuthTokens login(LoginParams params, HttpServletResponse response, HttpServletRequest request) throws IOException {
 		InfoResponse infoResponse = requestOAuthInfoService.request(params);
 		Long userId = findOrCreateMember(infoResponse);
 
@@ -64,8 +65,17 @@ public class OAuthLoginService {
 		long accessTokenMaxAge = (accessTokenExpiration.getTime() - System.currentTimeMillis()) / 1000L;
 		long refreshTokenMaxAge = (refreshTokenExpiration.getTime() - System.currentTimeMillis()) / 1000L;
 
-		ResponseCookie accessCookie = createCookie("accessToken", authTokens.getAccessToken(), "devbreak.site", true, accessTokenMaxAge);
-		ResponseCookie refreshCookie = createCookie("refreshToken", authTokens.getRefreshToken(), "devbreak.site", true, refreshTokenMaxAge);
+		String referer = request.getHeader("Referer");
+		String cookieDomain = "api.devbreak.site"; // 기본적으로 백엔드 API 도메인 사용
+
+		if (referer != null && referer.contains("devbreak-eta.vercel.app")) {
+			cookieDomain = ".devbreak-eta.vercel.app"; // 테스트 환경용 도메인 설정
+		} else {
+			cookieDomain = ".devbreak.site"; // 본 서비스 도메인 설정 (서브도메인 포함 가능)
+		}
+
+		ResponseCookie accessCookie = createCookie("accessToken", authTokens.getAccessToken(), cookieDomain, true, accessTokenMaxAge);
+		ResponseCookie refreshCookie = createCookie("refreshToken", authTokens.getRefreshToken(), cookieDomain, true, refreshTokenMaxAge);
 
 		response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
 		response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
@@ -73,7 +83,11 @@ public class OAuthLoginService {
 		log.info("Set-Cookie 헤더: {}", accessCookie);
 		log.info("Set-Cookie 헤더: {}", refreshCookie);
 
-		response.sendRedirect("https://devbreak-eta.vercel.app");
+		if (cookieDomain.equals(".devbreak-eta.vercel.app")) {
+			response.sendRedirect("https://devbreak-eta.vercel.app");
+		} else {
+			response.sendRedirect("https://devbreak.site");
+		}
 //		response.sendRedirect("https://devbreak-eta.vercel.app?"+"accessToken="+authTokens.getAccessToken()+"&refreshToken="+authTokens.getRefreshToken());
 		return authTokens;
 	}

@@ -57,6 +57,7 @@ public class SecurityConfig {
         securedConfiguration.addAllowedOrigin("https://www.devbreak.site");
         securedConfiguration.addAllowedOrigin("https://devbreak.site");
         securedConfiguration.addAllowedOrigin("https://api.devbreak.site");
+        securedConfiguration.addAllowedOrigin("https://devbreak-eta.vercel.app");
         securedConfiguration.addAllowedMethod("*");
         securedConfiguration.addAllowedHeader("*");
         securedConfiguration.setAllowCredentials(true);

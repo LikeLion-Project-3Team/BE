@@ -4,6 +4,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import likelion.devbreak.domain.User;
 import likelion.devbreak.oAuth.domain.AuthTokens;
@@ -37,10 +38,11 @@ public class AuthController {
     // GET 방식으로 code와 state 받기
     @GetMapping("/github")
     @Operation(summary = "로그인 API", description = "사용 X")
-    public ResponseEntity<?> githubCallback(@RequestParam(name = "code") String code, HttpServletResponse response) {
+    public ResponseEntity<?> githubCallback(@RequestParam(name = "code") String code, HttpServletResponse response,
+                                            HttpServletRequest request) {
         try {
             LoginParams params = new LoginParams(code);
-            AuthTokens authTokens = oAuthLoginService.login(params, response);
+            AuthTokens authTokens = oAuthLoginService.login(params, response, request);
             log.info("Access Token: {}", authTokens.getAccessToken());
             // code와 state를 전달하여 토큰 발급
             return ResponseEntity.ok(authTokens);
